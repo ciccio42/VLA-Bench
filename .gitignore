@@ -4,3 +4,8 @@ robosuite_test/experiments
 *pyc
 robosuite_test/robosuite
 *__pycache__/*
+*.egg-info
+*build/*
+dist/
+.eggs/
+*.egg
