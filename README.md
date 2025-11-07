@@ -54,3 +54,14 @@ pip install -e .
 cd ../llava-pythia
 pip install -e . 
 ```
+
+# How to run evaluation
+**NOTE**
+Before running evaluation you need to set:
+* **task_suite_name** parameter in *run_robosuite_eval.sh*
+* **config_path** parameter in *run_robosuite_eval.sh*, point to the configuration file of the model you wish to test. 
+* In config .yml change **task_suite_name** and any parameter related to the checkpoint you wish to test
+
+```bash
+sbatch run_robosuite_eval.sh
+```
