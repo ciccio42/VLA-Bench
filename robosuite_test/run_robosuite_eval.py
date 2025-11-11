@@ -8,9 +8,10 @@ import pickle as pkl
 import random
 
 # import Configuration File
+# sys.path.append('../.')
+# sys.path.append("/home/rsofnc000/Multi-Task-LFD-Framework/repo/TinyVLA")
 sys.path.append('../.')
-sys.path.append("/home/rsofnc000/Multi-Task-LFD-Framework/repo/TinyVLA")
-sys.path.append("/home/rsofnc000/Multi-Task-LFD-Framework/repo/TinyVLA/test/robosuite_test/robosuite")
+sys.path.append("./robosuite/robosuite")
 from robosuite_utils import *
 from robot_utils import set_seed_everywhere, setup_logging, get_image_resize_size, TASK_VARIATION_DICT, COMMAND, TASK_MAX_STEPS
 from robosuite_test.models.configs import EvalConfig

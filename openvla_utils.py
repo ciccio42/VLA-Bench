@@ -59,7 +59,7 @@ def model_is_on_hf_hub(model_path: str) -> bool:
         return False
 
 
-def update_auto_map(pretrained_checkpoint: str) -> None:
+def update_auto_map(model_path: str) -> None:
     """
     Update the AutoMap configuration in the checkpoint config.json file.
 
@@ -67,19 +67,19 @@ def update_auto_map(pretrained_checkpoint: str) -> None:
     the AutoConfig and AutoModelForVision2Seq fields to use OpenVLA-specific classes.
 
     Args:
-        pretrained_checkpoint: Path to the checkpoint directory
+        model_path: Path to the checkpoint directory
     """
-    if not os.path.isdir(pretrained_checkpoint):
+    if not os.path.isdir(model_path):
         return
 
-    config_path = os.path.join(pretrained_checkpoint, "config.json")
+    config_path = os.path.join(model_path, "config.json")
     if not os.path.exists(config_path):
         print(f"Warning: No config.json found at {config_path}")
         return
 
     # Create timestamped backup
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_path = os.path.join(pretrained_checkpoint, f"config.json.back.{timestamp}")
+    backup_path = os.path.join(model_path, f"config.json.back.{timestamp}")
     shutil.copy2(config_path, backup_path)
     print(f"Created backup of original config at: {os.path.abspath(backup_path)}")
 
@@ -171,7 +171,7 @@ def _handle_file_sync(curr_filepath: str, checkpoint_filepath: str, file_type: s
         )
 
 
-def check_model_logic_mismatch(pretrained_checkpoint: str) -> None:
+def check_model_logic_mismatch(model_path: str) -> None:
     """
     Check and sync model logic files between current code and checkpoint.
 
@@ -181,9 +181,9 @@ def check_model_logic_mismatch(pretrained_checkpoint: str) -> None:
     - If checkpoint file doesn't exist: copies current version
 
     Args:
-        pretrained_checkpoint: Path to the checkpoint directory
+        model_path: Path to the checkpoint directory
     """
-    if not os.path.isdir(pretrained_checkpoint):
+    if not os.path.isdir(model_path):
         return
 
     # Find current files
@@ -200,16 +200,16 @@ def check_model_logic_mismatch(pretrained_checkpoint: str) -> None:
             print(f"WARNING: `{filename}` is not found anywhere in the current directory.")
             continue
 
-        checkpoint_filepath = os.path.join(pretrained_checkpoint, filename)
+        checkpoint_filepath = os.path.join(model_path, filename)
         _handle_file_sync(curr_filepath, checkpoint_filepath, filename)
 
 
-def find_checkpoint_file(pretrained_checkpoint: str, file_pattern: str) -> str:
+def find_checkpoint_file(model_path: str, file_pattern: str) -> str:
     """
     Find a specific checkpoint file matching a pattern.
 
     Args:
-        pretrained_checkpoint: Path to the checkpoint directory
+        model_path: Path to the checkpoint directory
         file_pattern: String pattern to match in filenames
 
     Returns:
@@ -218,16 +218,16 @@ def find_checkpoint_file(pretrained_checkpoint: str, file_pattern: str) -> str:
     Raises:
         AssertionError: If no files or multiple files match the pattern
     """
-    assert os.path.isdir(pretrained_checkpoint), f"Checkpoint path must be a directory: {pretrained_checkpoint}"
+    assert os.path.isdir(model_path), f"Checkpoint path must be a directory: {model_path}"
 
     checkpoint_files = []
-    for filename in os.listdir(pretrained_checkpoint):
+    for filename in os.listdir(model_path):
         if file_pattern in filename and "checkpoint" in filename:
-            full_path = os.path.join(pretrained_checkpoint, filename)
+            full_path = os.path.join(model_path, filename)
             checkpoint_files.append(full_path)
 
     assert len(checkpoint_files) == 1, (
-        f"Expected exactly 1 {file_pattern} checkpoint but found {len(checkpoint_files)} in directory: {pretrained_checkpoint}"
+        f"Expected exactly 1 {file_pattern} checkpoint but found {len(checkpoint_files)} in directory: {model_path}"
     )
 
     return checkpoint_files[0]
@@ -273,7 +273,7 @@ def get_vla(cfg: Any) -> torch.nn.Module:
     # actually go into effect
     # If loading a pretrained checkpoint from Hugging Face Hub, we just assume that the policy
     # will be used as is, with its original modeling logic
-    if not model_is_on_hf_hub(cfg.pretrained_checkpoint):
+    if not model_is_on_hf_hub(cfg.model_path):
         # Register OpenVLA model to HF Auto Classes (not needed if the model is on HF Hub)
         AutoConfig.register("openvla", OpenVLAConfig)
         AutoImageProcessor.register(OpenVLAConfig, PrismaticImageProcessor)
@@ -281,12 +281,12 @@ def get_vla(cfg: Any) -> torch.nn.Module:
         AutoModelForVision2Seq.register(OpenVLAConfig, OpenVLAForActionPrediction)
 
         # Update config.json and sync model files
-        update_auto_map(cfg.pretrained_checkpoint)
-        check_model_logic_mismatch(cfg.pretrained_checkpoint)
+        update_auto_map(cfg.model_path)
+        check_model_logic_mismatch(cfg.model_path)
 
     # Load the model
     vla = AutoModelForVision2Seq.from_pretrained(
-        cfg.pretrained_checkpoint,
+        cfg.model_path,
         # attn_implementation="flash_attention_2",
         torch_dtype=torch.bfloat16,
         load_in_8bit=cfg.load_in_8bit,
@@ -309,7 +309,7 @@ def get_vla(cfg: Any) -> torch.nn.Module:
         vla = vla.to(DEVICE)
 
     # Load dataset stats for action normalization
-    _load_dataset_stats(vla, cfg.pretrained_checkpoint)
+    _load_dataset_stats(vla, cfg.model_path)
 
     return vla
 
@@ -344,7 +344,7 @@ def _apply_film_to_vla(vla: torch.nn.Module, cfg: Any) -> torch.nn.Module:
     vla.model.vision_backbone = new_vision_backbone
 
     # Load vision backbone checkpoint
-    checkpoint_path = find_checkpoint_file(cfg.pretrained_checkpoint, "vision_backbone")
+    checkpoint_path = find_checkpoint_file(cfg.model_path, "vision_backbone")
     state_dict = torch.load(checkpoint_path, weights_only=True)
     vla.model.vision_backbone.load_state_dict(state_dict)
 
@@ -397,10 +397,10 @@ def get_model(cfg: Any, wrap_diffusion_policy_for_droid: bool = False) -> torch.
     Raises:
         ValueError: If model family is not supported
     """
-    if isinstance(cfg, OpenVLAConfig):
-        model = get_vla(cfg)
-    else:
-        raise ValueError(f"Unsupported model family: {cfg.type}")
+    #if isinstance(cfg, OpenVLAConfig):
+    model = get_vla(cfg)
+    # else:
+    #     raise ValueError(f"Unsupported model family: {cfg.type}")
 
     print(f"Loaded model: {type(model)}")
     return model
@@ -416,7 +416,7 @@ def get_processor(cfg: Any) -> AutoProcessor:
     Returns:
         AutoProcessor: The model's processor
     """
-    return AutoProcessor.from_pretrained(cfg.pretrained_checkpoint, trust_remote_code=True)
+    return AutoProcessor.from_pretrained(cfg.model_path, trust_remote_code=True)
 
 
 def get_proprio_projector(cfg: Any, llm_dim: int, proprio_dim: int) -> ProprioProjector:
@@ -440,23 +440,23 @@ def get_proprio_projector(cfg: Any, llm_dim: int, proprio_dim: int) -> ProprioPr
     proprio_projector.eval()
 
     # Find and load checkpoint (may be on Hugging Face Hub or stored locally)
-    if model_is_on_hf_hub(cfg.pretrained_checkpoint):
+    if model_is_on_hf_hub(cfg.model_path):
         model_path_to_proprio_projector_name = {
             "moojink/openvla-7b-oft-finetuned-libero-spatial": "proprio_projector--150000_checkpoint.pt",
             "moojink/openvla-7b-oft-finetuned-libero-object": "proprio_projector--150000_checkpoint.pt",
             "moojink/openvla-7b-oft-finetuned-libero-goal": "proprio_projector--50000_checkpoint.pt",
             "moojink/openvla-7b-oft-finetuned-libero-10": "proprio_projector--150000_checkpoint.pt",
         }
-        if cfg.pretrained_checkpoint not in model_path_to_proprio_projector_name.keys():
+        if cfg.model_path not in model_path_to_proprio_projector_name.keys():
             raise ValueError("Unsupported HF Hub pretrained checkpoint found!")
         # Download proprio projector directly from HF Hub
         proprio_projector_path = hf_hub_download(
-            repo_id=cfg.pretrained_checkpoint, filename=model_path_to_proprio_projector_name[cfg.pretrained_checkpoint]
+            repo_id=cfg.model_path, filename=model_path_to_proprio_projector_name[cfg.model_path]
         )
         state_dict = load_component_state_dict(proprio_projector_path)
         proprio_projector.load_state_dict(state_dict)
     else:
-        checkpoint_path = find_checkpoint_file(cfg.pretrained_checkpoint, "proprio_projector")
+        checkpoint_path = find_checkpoint_file(cfg.model_path, "proprio_projector")
         state_dict = load_component_state_dict(checkpoint_path)
         proprio_projector.load_state_dict(state_dict)
 
@@ -482,7 +482,7 @@ def get_noisy_action_projector(cfg: Any, llm_dim: int) -> NoisyActionProjector:
     noisy_action_projector.eval()
 
     # Find and load checkpoint
-    checkpoint_path = find_checkpoint_file(cfg.pretrained_checkpoint, "noisy_action_projector")
+    checkpoint_path = find_checkpoint_file(cfg.model_path, "noisy_action_projector")
     state_dict = load_component_state_dict(checkpoint_path)
     noisy_action_projector.load_state_dict(state_dict)
 
@@ -519,23 +519,23 @@ def get_action_head(cfg: Any, llm_dim: int) -> Union[L1RegressionActionHead, Dif
     action_head.eval()
 
     # Find and load checkpoint (may be on Hugging Face Hub or stored locally)
-    if model_is_on_hf_hub(cfg.pretrained_checkpoint):
+    if model_is_on_hf_hub(cfg.model_path):
         model_path_to_action_head_name = {
             "moojink/openvla-7b-oft-finetuned-libero-spatial": "action_head--150000_checkpoint.pt",
             "moojink/openvla-7b-oft-finetuned-libero-object": "action_head--150000_checkpoint.pt",
             "moojink/openvla-7b-oft-finetuned-libero-goal": "action_head--50000_checkpoint.pt",
             "moojink/openvla-7b-oft-finetuned-libero-10": "action_head--150000_checkpoint.pt",
         }
-        if cfg.pretrained_checkpoint not in model_path_to_action_head_name.keys():
+        if cfg.model_path not in model_path_to_action_head_name.keys():
             raise ValueError("Unsupported HF Hub pretrained checkpoint found!")
         # Download proprio projector directly from HF Hub
         action_head_path = hf_hub_download(
-            repo_id=cfg.pretrained_checkpoint, filename=model_path_to_action_head_name[cfg.pretrained_checkpoint]
+            repo_id=cfg.model_path, filename=model_path_to_action_head_name[cfg.model_path]
         )
         state_dict = load_component_state_dict(action_head_path)
         action_head.load_state_dict(state_dict)
     else:
-        checkpoint_path = find_checkpoint_file(cfg.pretrained_checkpoint, "action_head")
+        checkpoint_path = find_checkpoint_file(cfg.model_path, "action_head")
         state_dict = load_component_state_dict(checkpoint_path)
         action_head.load_state_dict(state_dict)
 

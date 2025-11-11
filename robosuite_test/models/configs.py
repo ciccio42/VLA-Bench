@@ -18,7 +18,7 @@ class OpenVLAConfig(ModelConfig):
     #################################################################################################################
     # Model-specific parameters
     #################################################################################################################
-    pretrained_checkpoint: Union[str, Path] = ""     # Pretrained checkpoint path
+    model_path: Union[str, Path] = ""     # Pretrained checkpoint path
 
     use_l1_regression: bool = True                   # If True, uses continuous action head with L1 regression objective
     use_diffusion: bool = False                      # If True, uses continuous action head with diffusion modeling objective (DDIM)
@@ -88,7 +88,7 @@ class EvalConfig:
 
     seed: int = 42                                    # Random Seed (for reproducibility)
     
-    controller_path: str = "/home/rsofnc000/Multi-Task-LFD-Framework/repo/openvla-oft/experiments/robot/robosuite/tasks/multi_task_robosuite_env/controllers/config/osc_pose.json" # Path to custom controller config
+    controller_path: str = "/home/rsofnc000/Multi-Task-LFD-Framework/repo/TinyVLA/test/robosuite_test/tasks/multi_task_robosuite_env/controllers/config/osc_pose.json" # Path to custom controller config
     
     debug: bool = False                           # Whether to run in debug mode (for debugging purposes)
     run_number: int = 0                                  # Run number (for logging purposes)
@@ -96,5 +96,6 @@ class EvalConfig:
     change_spawn_regions: bool = False             # Whether to change spawn regions for the tasks
     change_command: bool = False                   # Whether to change the command for the tasks
     object_set: int = -1                       # Whether to change the object for the tasks
+    OoD: bool = False                              # Whether to evaluate out-of-distribution variations
 
 

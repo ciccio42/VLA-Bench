@@ -53,9 +53,9 @@ logger = logging.getLogger(__name__)
 
 def validate_config(cfg: OpenVLAConfig) -> None:
     """Validate configuration parameters."""
-    assert cfg.pretrained_checkpoint is not None, "pretrained_checkpoint must not be None!"
+    assert cfg.model_path is not None, "model_path must not be None!"
 
-    if "image_aug" in str(cfg.pretrained_checkpoint):
+    if "image_aug" in str(cfg.model_path):
         assert cfg.center_crop, "Expecting `center_crop==True` because model was trained with image augmentations!"
 
     assert not (cfg.load_in_8bit and cfg.load_in_4bit), "Cannot use both 8-bit and 4-bit quantization!"
@@ -104,7 +104,7 @@ class open_vla_policy:
         self.proprio_projector = proprio_projector
         self.noisy_action_projector = noisy_action_projector
         self.processor = processor
-
+        self.chunk_size = cfg.chunk_size
 
     def compute_action(self, obs, resize_size, gripper_closed, task_description, task_name='pick_place', n_steps=-1):
         elapsed_time = 0
@@ -244,7 +244,7 @@ class open_vla_policy:
 
     def action_post_processing(self, obs, action_chunk=None, n_steps=-1):
         post_processed_actions = []
-        for action in action_chunk:
+        for action in action_chunk[:self.chunk_size]:
             action = action*SCALE_FACTOR
             print(f"Action delta at time {n_steps}: {action}")
             
@@ -266,8 +266,9 @@ class open_vla_policy:
                 gripper_orientation_action = current_gripper_orientation + action[3:6]
                 gripper_orientation_action = [normalize_angle(a) for a in gripper_orientation_action]
                 action_world[3:6] = euler_to_axis_angle(gripper_orientation_action)
-                
+                action_world[-1] = action[-1]
             post_processed_actions.append(copy.deepcopy(action_world))
+        return post_processed_actions
 
 def setup_logging(cfg: OpenVLAConfig):
     """Set up logging to file and optionally to wandb."""
