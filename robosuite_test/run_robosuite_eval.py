@@ -8,8 +8,6 @@ import pickle as pkl
 import random
 
 # import Configuration File
-# sys.path.append('../.')
-# sys.path.append("/home/rsofnc000/Multi-Task-LFD-Framework/repo/TinyVLA")
 sys.path.append('../.')
 sys.path.append("./robosuite/robosuite")
 from robosuite_utils import *
