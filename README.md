@@ -36,7 +36,7 @@ pip install torch==2.7.0+cu128 torchvision==0.22.0+cu128 –index-url https://do
 # Install utils
 pip install -e ../.
 
-git clone -b ur5e_ik https://github.com/ciccio42/robosuite.git
+# Download anonymous robosuite repository https://anonymous.4open.science/r/robosuite-FBC9
 cd robosuite
 pip install -r requirements.txt 
 cd ..
