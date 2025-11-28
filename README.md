@@ -1,3 +1,6 @@
+# VLA-Bench
+This is the repository linked to the research project: *VLA-Bench: A Systematic Protocol for Evaluating Generalization of Vision-Language-Action Models*
+
 # Install MUJOCO
 Follow instruction reported [here](https://docs.pytorch.org/rl/main/reference/generated/knowledge_base/MUJOCO_INSTALLATION.html), for "Old bindings (≤ 2.1.1): mujoco-py".
 We plan to update both mujoco and robosuite in next iterations
