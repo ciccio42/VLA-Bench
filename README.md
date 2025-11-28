@@ -7,7 +7,7 @@ We plan to update both mujoco and robosuite in next iterations
 
 
 # Robosuite for OpenVLA Installation
-**Note**: We assume you have already downloaded OpenVLA-OFT anonymous repository: https://anonymous.4open.science/r/openvla-oft
+**Note**: We assume you have already downloaded OpenVLA-OFT anonymous repository: https://anonymous.4open.science/r/openvla-oft </br>
 In `robosuite_test` folder:
 ```bash
 conda env create -f conda_environments/openvla_robosuite_1_0_1.yaml
@@ -25,7 +25,7 @@ pip install 'Cython<3.0'
 ```
 
 # Robosuite for TinyVLA Installation
-**Note**: We assume you have already downloaded TinyVLA anonymous repository: https://anonymous.4open.science/r/TinyVLA-6286/README.md
+**Note**: We assume you have already downloaded TinyVLA anonymous repository: https://anonymous.4open.science/r/TinyVLA-6286/README.md </br>
 
 In `robosuite_test` folder:
 ```bash
