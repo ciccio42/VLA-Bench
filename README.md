@@ -7,6 +7,7 @@ We plan to update both mujoco and robosuite in next iterations
 
 
 # Robosuite for OpenVLA Installation
+**Note**: We assume you have already downloaded OpenVLA-OFT anonymous repository: https://anonymous.4open.science/r/openvla-oft
 In `robosuite_test` folder:
 ```bash
 conda env create -f conda_environments/openvla_robosuite_1_0_1.yaml
@@ -15,7 +16,7 @@ pip install -r python_requirements/openvla_requiments.txt  # openvla-requirement
 pip install torch==2.2.0+cu118 torchvision==0.17.0+cu118 -f https://download.pytorch.org/whl/torch_stable.html
 pip install git+https://github.com/moojink/transformers-openvla-oft.git
 
-git clone -b ur5e_ik https://github.com/ciccio42/robosuite.git
+# Download anonymous robosuite repository https://anonymous.4open.science/r/robosuite-FBC9
 cd robosuite
 pip install -r requirements.txt
 cd ..
@@ -24,6 +25,8 @@ pip install 'Cython<3.0'
 ```
 
 # Robosuite for TinyVLA Installation
+**Note**: We assume you have already downloaded TinyVLA anonymous repository: https://anonymous.4open.science/r/TinyVLA-6286/README.md
+
 In `robosuite_test` folder:
 ```bash
 conda env create -f conda_environments/tinyvla_robosuite_1_0_1.yaml
