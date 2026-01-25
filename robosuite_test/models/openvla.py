@@ -31,6 +31,7 @@ from openvla_utils import (
     check_unnorm_key,
     get_model,
     euler_to_axis_angle,
+    axisangle_to_euler,
     SCALE_FACTOR,
     R_EE_TO_GRIPPER
 )
@@ -244,7 +245,7 @@ class open_vla_policy:
 
     def action_post_processing(self, obs, action_chunk=None, n_steps=-1):
         post_processed_actions = []
-        for action in action_chunk[:self.chunk_size]:
+        for indx, action in enumerate(action_chunk[:self.chunk_size]):
             action = action*SCALE_FACTOR
             print(f"Action delta at time {n_steps}: {action}")
             
@@ -257,12 +258,17 @@ class open_vla_policy:
                 # action[0] = np.clip(action[0], 0.0, 1.0)
                 # if action[6] >= 0.8 and action[0] < 0:
                 #     action[0] = -action[0]
+                if indx == 0:
+                    action_world[0:3] = obs['eef_pos'] + action[0:3]
+                    # Orientation action in world frame
+                    current_gripper_orientation =  mat2euler(R_EE_TO_GRIPPER @ quat2mat(obs['eef_quat']))
+                    current_gripper_orientation =  [normalize_angle(a) for a in current_gripper_orientation]
+                else:
+                    action_world[0:3] = post_processed_actions[-1][0:3] + action[0:3]
+                    current_gripper_orientation =  axisangle_to_euler(post_processed_actions[-1][3:6])
+                    current_gripper_orientation =  [normalize_angle(a) for a in current_gripper_orientation]
                 
-                action_world[0:3] = obs['eef_pos'] + action[0:3]
                 
-                # Orientation action in world frame
-                current_gripper_orientation =  mat2euler(R_EE_TO_GRIPPER @ quat2mat(obs['eef_quat']))
-                current_gripper_orientation =  [normalize_angle(a) for a in current_gripper_orientation]
                 gripper_orientation_action = current_gripper_orientation + action[3:6]
                 gripper_orientation_action = [normalize_angle(a) for a in gripper_orientation_action]
                 action_world[3:6] = euler_to_axis_angle(gripper_orientation_action)

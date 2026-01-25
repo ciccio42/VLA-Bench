@@ -9,3 +9,4 @@ robosuite_test/robosuite
 dist/
 .eggs/
 *.egg
+*.mp4

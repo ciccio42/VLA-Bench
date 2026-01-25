@@ -18,7 +18,7 @@ SPAWN_REGION_REMOVED_PER_OBJ = {
 }
 
 def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_description: str,
-                    task_name = 'pick_place', change_spawn_regions=False):
+                    task_name = 'pick_place', change_spawn_regions=False, use_vllm=False):
 
     if change_spawn_regions and cfg.task_suite_name == "ur5e_pick_place_removed_spawn_regions":
         print(f"Using spawn regions for variation {variation_id}")
@@ -89,7 +89,7 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
     tasks["place_correct_bin_wrong_obj"] = 0.0
     elapsed_time = 0.0
     
-    # os.makedirs("images", exist_ok=True)
+    os.makedirs("images", exist_ok=True)
     
     previous_action = np.zeros((7,), dtype=np.float32)
     
@@ -148,9 +148,6 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
             elif gripper_closed and round(action_world[6], 2) > 0.7:
                 action_world[6] = 1.0
 
-            
-            
-                
             # avoid too strong gripper orientation changes
             if n_steps > 0:
                 previous_gripper_orientation_action = previous_action[3:6]
@@ -200,7 +197,8 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                 else:
                     obs, reward, env_done, info = env.step(action_world)
                     #print(f"Reward: {reward}, Env done: {env_done}")
-                    # print(f"\tPose after step {n_steps}: {obs['eef_pos']}")    
+                    print(f"\nStep {n_steps} action taken: {action_world}")
+                    print(f"\tPose after step {n_steps}: {obs['eef_pos']}")    
                 
                 if reward == 1:
                     print("Success!")

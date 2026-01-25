@@ -1,0 +1,2 @@
+user_prompt: |
+  Describe the task performed by the human operator. There are 4 colored boxes and 4 bins. The bins are numbered 1 to 4 from left to right. Describe with a template like 'Pick the [COLOR] object and place it into [NUMBER] bin'.

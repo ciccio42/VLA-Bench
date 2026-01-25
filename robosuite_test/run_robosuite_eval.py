@@ -2,10 +2,13 @@ import json
 import os
 import shutil
 import sys
+
+import torch
 import draccus
 import numpy as np
 import pickle as pkl
 import random
+
 
 # import Configuration File
 sys.path.append('../.')
@@ -13,6 +16,7 @@ sys.path.append("./robosuite/robosuite")
 from robosuite_utils import *
 from robot_utils import set_seed_everywhere, setup_logging, get_image_resize_size, TASK_VARIATION_DICT, COMMAND, TASK_MAX_STEPS
 from robosuite_test.models.configs import EvalConfig
+
 
 
 @draccus.wrap()
@@ -30,8 +34,7 @@ def eval_robosuite(cfg: EvalConfig) -> float:
     # Set random seed
     # if 'rm_12_13_14_15' in cfg.task_suite_name:
     #     set_seed_everywhere(0)
-    # else:    
-    
+    # else:        
     set_seed_everywhere(cfg.seed)
     # Setup logging
     log_file, local_log_filepath, run_id = setup_logging(cfg)
@@ -42,9 +45,19 @@ def eval_robosuite(cfg: EvalConfig) -> float:
     run_episode_fn = None
     if cfg.model_family.lower() == "openvla":
         from robosuite_test.models.openvla import open_vla_policy
+        from robosuite_test.vllm_utils import is_vllm_server_up, run_vllm_server, run_vllm_mockup, HOST_NAME
+        if cfg.model_config.use_cosmos_name:
+            print(f"Using Cosmos model name: {cfg.model_config.model_cosmos_name}")
+            ok, msg = is_vllm_server_up(HOST_NAME, cfg.model_config.model_cosmos_port)
+            print(ok, msg)
+            assert ok, "vLLM server is not reachable. Please start the vLLM server before running evaluation."
+            cfg.model_config.model_cosmos_name = msg.split("Models available: ")[1].strip("[]").replace("'", "").split(", ")[0]
+            
+            
         # Validate configuration
         print(f"Running OpenVLA evaluation....")
         policy = open_vla_policy(cfg.model_config)
+        
     elif cfg.model_family.lower() == "tinyvla":
         from robosuite_test.models.tinyvla import llava_pythia_act_policy
         print(f"Running TinyVLA evaluation....")
@@ -73,7 +86,7 @@ def eval_robosuite(cfg: EvalConfig) -> float:
             env_name = 'pick_place'
             
         # save trajectory and info
-        save_path = os.path.join(cfg.model_config.model_path, f"rollout_{env_name}_{cfg.run_number}_{cfg.change_spawn_regions}_obj_set_{cfg.object_set}_change_command_{cfg.change_command}")#_task_list_{test_variations}")
+        save_path = os.path.join(cfg.model_config.model_path, f"rollout_{env_name}_{cfg.run_number}_{cfg.change_spawn_regions}_obj_set_{cfg.object_set}_change_command_{cfg.change_command}_use_vllm_{cfg.model_config.use_cosmos_name}")#_task_list_{test_variations}")
         os.makedirs(save_path, exist_ok=True)
         print(f"Saving rollout to: {save_path}")
         if os.path.exists(os.path.join(save_path, f"info_{ctr}.json")):
@@ -112,6 +125,14 @@ def eval_robosuite(cfg: EvalConfig) -> float:
         # set_seed_everywhere(cfg.seed)
         # remove saved images
         # shutil.rmtree("./images/", ignore_errors=True)
+        if cfg.model_config.use_cosmos_name:
+            task_description = run_vllm_server(model_name=cfg.model_config.model_cosmos_name,
+                                                dataset_path=cfg.model_config.dataset_path,
+                                                env_name=env_name,
+                                                variation_id=variation_id,
+                                                host=HOST_NAME,
+                                                port=cfg.model_config.model_cosmos_port,)
+        
         traj, info = eval_fn(cfg = cfg,  
                             policy = policy, 
                             env = env, 
@@ -120,9 +141,10 @@ def eval_robosuite(cfg: EvalConfig) -> float:
                             resize_size = resize_size, 
                             task_description= task_description,
                             task_name = env_name,
-                            change_spawn_regions=cfg.change_spawn_regions)
-    
+                            change_spawn_regions=cfg.change_spawn_regions,
+                            use_vllm=cfg.model_config.use_cosmos_name,)
         
+        info['task_description'] = task_description
         print("Evaluated traj #{}, task#{}, reached? {} picked? {} success? {} ".format(ctr, variation_id, info['reached'], info['picked'], info['success']))
         success_cnt += info['success']
         reached_cnt += info['reached']

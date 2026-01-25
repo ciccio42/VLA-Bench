@@ -839,6 +839,45 @@ def get_vla_action(
     # Extract subset of actions for open loop steps
     return [action[i] for i in range(min(len(action), cfg.num_open_loop_steps))]
 
+def axisangle_to_euler(aa):
+    angle = np.linalg.norm(aa)
+    if np.isclose(angle, 0):
+        return np.zeros(3)
+
+    axis = aa / angle
+    x, y, z = axis[0], axis[1], axis[2]
+
+    cos_angle = np.cos(angle)
+    sin_angle = np.sin(angle)
+    one_minus_cos = 1 - cos_angle
+
+    # Rotation matrix components
+    R = np.array([
+        [cos_angle + x * x * one_minus_cos,
+         x * y * one_minus_cos - z * sin_angle,
+         x * z * one_minus_cos + y * sin_angle],
+        [y * x * one_minus_cos + z * sin_angle,
+         cos_angle + y * y * one_minus_cos,
+         y * z * one_minus_cos - x * sin_angle],
+        [z * x * one_minus_cos - y * sin_angle,
+         z * y * one_minus_cos + x * sin_angle,
+         cos_angle + z * z * one_minus_cos]
+    ])
+
+    # Extract Euler angles from rotation matrix
+    sy = np.sqrt(R[0, 0] ** 2 + R[1, 0] ** 2)
+    singular = sy < 1e-6
+
+    if not singular:
+        roll = np.arctan2(R[2, 1], R[2, 2])
+        pitch = np.arctan2(-R[2, 0], sy)
+        yaw = np.arctan2(R[1, 0], R[0, 0])
+    else:
+        roll = np.arctan2(-R[1, 2], R[1, 1])
+        pitch = np.arctan2(-R[2, 0], sy)
+        yaw = 0
+
+    return np.array([roll, pitch, yaw])
 
 
 def euler_to_axis_angle(aa):

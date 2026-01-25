@@ -125,4 +125,4 @@ dependencies:
   - zipp=3.23.0=pyhd8ed1ab_0
   - zlib=1.2.13=h4ab18f5_6
   - zstd=1.5.6=ha6fb4c9_0
-prefix: /home/rsofnc000/.conda/envs/openvla_robosuite_1_0_1
+prefix: /mnt/beegfs/frosa/.conda/envs/openvla_robosuite_1_0_1

@@ -1,4 +1,4 @@
-task_suite_name: &tsn ur5e_pick_place_rm_central_spawn
+task_suite_name: &tsn ur5e_pick_place_delta_all
 model_family: "openvla"
 num_steps_wait: 10
 num_trials_per_task: 10
@@ -10,7 +10,7 @@ use_wandb: false
 wandb_entity: "your-wandb-entity"
 wandb_project: "your-wandb-project"
 seed: 42
-controller_path: "/home/rsofnc000/Multi-Task-LFD-Framework/repo/TinyVLA/test/robosuite_test/tasks/multi_task_robosuite_env/controllers/config/osc_pose.json"
+controller_path: "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/VLA-Benchmark/robosuite_test/tasks/multi_task_robosuite_env/controllers/config/osc_pose.json"
 debug: false
 run_number: 0
 change_spawn_regions: false
@@ -18,11 +18,11 @@ change_command: false
 OoD: false
 object_set: -1
 object_set: -1
-run_id_note: "ur5e_pick_place_rm_central_spawn_dec--8_acts_chunk--continuous_acts--L1_regression--3rd_person_img-gripper_img-proprio"
+run_id_note: "ur5e_pick_place_delta_all_parallel_dec--8_acts_chunk--continuous_acts--L1_regression--3rd_person_img-gripper_img-proprio"
 
 model_config:
   type: openvla
-  model_path: /home/rsofnc000/checkpoint_save_folder/open_vla/openvla-7b+ur5e_pick_place_rm_central_spawn+b8+lr-0.0005+lora-r32+dropout-0.0--image_aug--ur5e_pick_place_rm_central_spawn_parallel_dec--8_acts_chunk--continuous_acts--L1_regression--3rd_person_img-gripper_img-proprio--45000_chkpt
+  model_path: /mnt/beegfs/frosa/checkpoint_save_folder/checkpoint_save_folder/open_vla/openvla-7b+ur5e_pick_place_delta_all+b8+lr-0.0005+lora-r32+dropout-0.0--image_aug--ur5e_pick_place_delta_all_parallel_dec--8_acts_chunk--continuous_acts--L1_regression--3rd_person_img-gripper_img-proprio--40000_chkpt
   use_l1_regression: true
   use_diffusion: false
   num_diffusion_steps: 50
@@ -35,5 +35,7 @@ model_config:
   load_in_8bit: false
   load_in_4bit: false
   proprio_dim: 8
-  chunk_size: 1
+  chunk_size: 8
   task_suite_name: *tsn
+  use_cosmos_name: true      
+  model_cosmos_name: "nvidia/Cosmos-Reason2-8B" 

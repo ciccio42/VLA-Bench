@@ -43,6 +43,11 @@ class OpenVLAConfig(ModelConfig):
     chunk_size: int = 8         # Chunk size (number of actions to output at each policy query)
     task_suite_name: str = ''
     
+    use_cosmos_name: bool = False      # Whether to use Cosmos names for the tasks
+    model_cosmos_name: str = "nvidia/Cosmos-Reason2-8B"  # Cosmos name of the model
+    model_cosmos_port: int = 8000          # Port where the vLLM server is running
+    task_folder: str = ""            # Folder where the task files are located (for vLLM server)
+    dataset_path: str = '/mnt/beegfs/frosa/robot_datasets/dataset/no_opt_dataset'  # Task suite name
 
 @ModelConfig.register_subclass('tinyvla')
 @dataclass
@@ -57,7 +62,7 @@ class TinyVLAConfig(ModelConfig):
     enable_lora: bool = True                          # Whether to enable LoRA weights
     conv_mode: str = 'pythia'
     action_head: str = 'droid_diffusion'
-    task_suite_name: str = '' 
+
     
     
 @dataclass
