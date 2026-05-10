@@ -9,7 +9,6 @@ import sys
 class ModelConfig(draccus.ChoiceRegistry):
     pass
 
-
 @ModelConfig.register_subclass('openvla')
 @dataclass
 class OpenVLAConfig(ModelConfig):
@@ -59,6 +58,17 @@ class TinyVLAConfig(ModelConfig):
     action_head: str = 'droid_diffusion'
     task_suite_name: str = '' 
     
+@ModelConfig.register_subclass('mimicplay')
+@dataclass
+class MimicPlayConfig(ModelConfig):
+    home_dir: str = "/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_ur5e_agent_human_demo/test"  # Base directory for the model
+    model_path: str = "/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_ur5e_agent_human_demo/test/20260108191457/models/model_epoch_520_best_validation_-48.81781578063965.pth"                   # Path to the model
+    config_path: str = "/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_ur5e_agent_human_demo/test/20260108191457/config.json"                   # Path to the model config JSON file
+    highlevel_path: str = None
+    task_suite_name: str = ''
+    # device: str = "0" # GPU device ID 
+    
+    
     
 @dataclass
 class EvalConfig:
@@ -97,5 +107,5 @@ class EvalConfig:
     change_command: bool = False                   # Whether to change the command for the tasks
     object_set: int = -1                       # Whether to change the object for the tasks
     OoD: bool = False                              # Whether to evaluate out-of-distribution variations
-
+    eval_multiple_checkpoint: bool = False                     # Whether to evaluate multiple models (for model comparison experiments)
 

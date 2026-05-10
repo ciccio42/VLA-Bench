@@ -6,6 +6,7 @@ import robosuite.utils.transform_utils as T
 from robosuite_utils import normalize_angle
 import os
 from robot_utils import set_seed_everywhere
+from robosuite_test.models.mimicplay import MimicPlayPolicy
 
 OBJECT_SET = 2
 SCALE_FACTOR = 0.05 # SCale factor for actions
@@ -55,7 +56,20 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
         while spawn_region == [0.105, 0.045]:
             spawn_indx = np.random.randint(0, len(Y_SPAWN_REGION))
             spawn_region = Y_SPAWN_REGION[spawn_indx]        
- 
+    if isinstance(policy, MimicPlayPolicy):
+        print("Using MimicPlay policy - overriding task description with human demo")
+        
+        # check if same_conf_same_spawn in config path
+        if policy.same_conf and policy.same_spawn:
+            print("Using same conf and same spawn human demo")
+            spawn_region_indx = variation_id//4
+            spawn_region = Y_SPAWN_REGION[spawn_region_indx]
+            print(f"Spawn region: {spawn_region}")
+        elif policy.same_conf and not policy.same_spawn:
+            spawn_region_indx = -1
+            spawn_region = None
+            print("Using same conf and different spawn human demo - not changing spawn region")
+            # raise NotImplementedError("This setting is not implemented yet for pick and place. It would require sampling a human demo with the same configuration but different spawn region for each evaluation episode.")
     else:
         print(f"Using default spawn regions for variation {variation_id}")
         # spawn objects in default regions
@@ -69,8 +83,7 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
     done, states, images, obs, traj, tasks, current_gripper_pose = start_up_env_return
     
     img = Image.fromarray(obs['camera_front_image'])
-    # img.save("first_frame.jpg")
-    
+    img.save("first_frame.jpg")
     
     n_steps = 0
 
@@ -92,7 +105,11 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
     # os.makedirs("images", exist_ok=True)
     
     previous_action = np.zeros((7,), dtype=np.float32)
-    
+    previous_action_world = np.zeros((7,), dtype=np.float32)
+    os.makedirs("tmp", exist_ok=True)
+    os.makedirs("images", exist_ok=True)
+    # policy.reset()
+
     while not done:
 
         tasks['reached'] = int(check_reach(threshold=0.04,
@@ -127,30 +144,54 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
             gripper_closed = 0.0
         else:
             gripper_closed = 0 if action_world[6] == -1.0 else 1.0
-
-        action_world_chunk,  time_action = policy.compute_action(
+        # print("-----------------------------")
+        action_world_chunk,  time_action, img_concat = policy.compute_action(
                                 obs = obs,
                                 resize_size = resize_size,
                                 gripper_closed = gripper_closed,
                                 task_description = task_description,
                                 task_name = task_name,
-                                n_steps = n_steps)
+                                n_steps = n_steps,
+                                spawn_region = spawn_region_indx)
 
         for action_world in action_world_chunk:
-            # print(f"\n---- Predicted gripper {action_world[6]} ----")
+            
+            # print(f"Predicted gripper {action_world[6]} Step {n_steps}")
             if not gripper_closed and round(action_world[6], 2) > 0.9:
                 # action_world[2] = action[2] - 0.05
                 action_world[6] = 1.0
             elif not gripper_closed and round(action_world[6], 2) < 0.9:
                 action_world[6] = -1.0
-            elif gripper_closed and round(action_world[6], 2) < 0.7:
+            elif gripper_closed and round(action_world[6], 2) < -0.80:
                 action_world[6] = -1.0
-            elif gripper_closed and round(action_world[6], 2) > 0.7:
+            elif gripper_closed and round(action_world[6], 2) > -0.80:
                 action_world[6] = 1.0
-
+            else:
+                action_world[6] = previous_action[6]
             
+            if n_steps == 0:
+                previous_action_world = action_world.copy()
+            else:
+                if action_world[6] == 1.0:
+                    # print("Closing gripper without changing orientation")
+                    # print(f"Action world before step {n_steps}: {action_world}")
+                    if action_world[2] < previous_action_world[2] and action_world[0] < 0.16:
+                        action_world[2] = previous_action_world[2]  # prevent the gripper from moving down too much when closing
+                        # print(f"Action world after z check {n_steps}: {action_world}")
+                    # compute the difference between two consecutive z
+                    # if abs(action_world[2] - previous_action[2]) > 0.02:
+                    #     action_world[2] = previous_action[2] 
+                    # print(f"Action world after z check {n_steps}: {action_world}")
+                # print(f"{n_steps}")
+                if n_steps == max_T-3:
+                    # last step - open the gripper if it is closed
+                    if action_world[6] == 1.0:
+                        action_world[6] = -1.0
+                        # print("Last step - opening gripper")
+                        # print(f"Action world before last step {n_steps}: {action_world}")
+                    
+                previous_action_world = action_world.copy()
             
-                
             # avoid too strong gripper orientation changes
             if n_steps > 0:
                 previous_gripper_orientation_action = previous_action[3:6]
@@ -168,7 +209,6 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                     action_world[3:6] = previous_gripper_orientation_action
                 else:
                     previous_action = action_world.copy()
-                    
             else:
                 gripper_state_changed = False
                 previous_action = action_world.copy()
@@ -189,19 +229,17 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                         obs, reward, env_done, info = env.step(action_world)
                         for i in range(10):
                             obs, reward, env_done, info = env.step(action_world)
-                        # action_world[2] += 0.05  # move up after closing the gripper
-                        
+                        # action_world[2] += 0.03  # move up after closing the gripper
+                        # obs, reward, env_done, info = env.step(action_world)
                     else:
                         action_world[6] = 1.0
                         obs, reward, env_done, info = env.step(action_world)
                         action_world[6] = -1.0
                         # action_world[6] = 1.0
                         obs, reward, env_done, info = env.step(action_world)
-                else:
+                else:   
                     obs, reward, env_done, info = env.step(action_world)
-                    #print(f"Reward: {reward}, Env done: {env_done}")
-                    # print(f"\tPose after step {n_steps}: {obs['eef_pos']}")    
-                
+                    
                 if reward == 1:
                     print("Success!")
                 elif env_done:
@@ -214,7 +252,8 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
         
             image_step = obs['camera_front_image']
             image_step = Image.fromarray(image_step)
-            # image_step.save("step.jpg")
+            image_step.save(f"tmp/step_{n_steps}.jpg")
+            # image_step.save(f"step.jpg")
 
             # save the combination of gripper image and camera front image
             gripper_img = obs['robot0_eye_in_hand_image']
@@ -232,7 +271,8 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
             # img = Image.fromarray(current_step)
             # img.save(f"current_step.jpg")
             
-            
+            obs['image_concat'] = img_concat
+            traj.change_obs(n_steps-1, obs)
             traj.append(obs, reward, done, info, action_world)
             elapsed_time += time_action
             

@@ -1,0 +1,28 @@
+task_suite_name: &tsn ur5e_pick_place
+model_family: "mimicplay"
+num_steps_wait: 10
+num_trials_per_task: 10
+initial_states_path: "DEFAULT"
+env_img_res: 256
+save: false
+local_log_dir: "./experiments/logs"
+use_wandb: false
+wandb_entity: "your-wandb-entity"
+wandb_project: "your-wandb-project"
+seed: 42
+controller_path: "/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/test_robot/VLA-Bench/robosuite_test/tasks/multi_task_robosuite_env/controllers/config/osc_pose.json"
+debug: false
+run_number: 0
+change_spawn_regions: false
+change_command: false
+OoD: false
+object_set: -1
+run_id_note: *tsn
+
+model_config:
+  type: mimicplay
+  home_dir: '/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/test'
+  model_path: '/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/test/20260421134144/models/model_epoch_170.pth'
+  config_path: '/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/test/20260421134144/config.json'
+  highlevel_path: '/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_highlevel_agent_UR5E_demo_HUMAN_3D_state_20_same_conf_with_valid/test/20260329220840/models/model_epoch_4000.pth'
+  task_suite_name: *tsn

@@ -255,14 +255,15 @@ def get_expert_trajectory(env_type, controller_type, renderer=False, camera_obs=
     #     mujoco_py.cymj), 'Make sure to render with GPU to make eval faster'
     # reassign the gpu id
     visible_ids = os.environ['CUDA_VISIBLE_DEVICES'].split(',')
-    if gpu_id == 3:
-        gpu_id = 0
-    elif gpu_id == 0:
-        gpu_id = 3  # 1
-    elif gpu_id == 1:
-        gpu_id = 2
-    elif gpu_id == 2:
-        gpu_id = 1  # 3
+    # if gpu_id == 3:
+    #     gpu_id = 0
+    # elif gpu_id == 0:
+    #     gpu_id = 3  # 1
+    # elif gpu_id == 1:
+    #     gpu_id = 2
+    # elif gpu_id == 2:
+    #     gpu_id = 1  # 3
+    gpu_id = 2
     print(f"GPU-ID {gpu_id}")
     seed = seed if seed is not None else random.getrandbits(32)
     env_seed = seed if env_seed is None else env_seed

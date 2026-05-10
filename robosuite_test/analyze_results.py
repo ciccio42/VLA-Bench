@@ -3,9 +3,11 @@ import json
 import argparse
 import glob
 import numpy as np
+import debugpy
 
 BLACK_LIST = [] #[0,5,10,15]
-OBJ_3_COLOR_LIST = ["green", "orange", "red", "grey"]
+OBJ_3_COLOR_LIST = ["green", "yellow", "blue", "red"] #["green", "orange", "red", "grey"]
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze results from robosuite experiments.")
@@ -15,15 +17,21 @@ if __name__ == "__main__":
     parser.add_argument("--ood", type=str, default="False", help="Whether to change object positions.")
     parser.add_argument("--change_command", type=str, default="False", help="Whether to change object positions.")
     parser.add_argument("--obj_set", type=str, default="-1", help="Object set identifier.")
+    parser.add_argument("--same_conf_same_spawn", type=bool, default=True)
     
     args = parser.parse_args()
-    print(f"rollout_{args.task_name}_*_{args.change_obj_pos}_obj_set_{args.obj_set}_change_command_{args.change_command}_*_OoD_{args.ood}")
-    result_folders = glob.glob(os.path.join(args.path, f"rollout_{args.task_name}_*_{args.change_obj_pos}_obj_set_{args.obj_set}_change_command_{args.change_command}_OoD_{args.ood}"))
+    res_folder = f"rollout_{args.task_name}_*_{args.change_obj_pos}_obj_set_{args.obj_set}_change_command_{args.change_command}_*" #_*_OoD_{args.ood}")
+    result_folders = glob.glob(os.path.join(args.path, res_folder))
 
     if not result_folders:
         print("No result folders found in the specified path.")
         exit(1)
 
+    # print("Wait for debugpy to attach...")
+    # debugpy.listen(('0.0.0.0', 5678))
+    # debugpy.wait_for_client()
+    # print("Debugpy attached. Starting analysis...")
+    
     result = dict()
     for folder in result_folders:
         run_number = folder.split(f'rollout_{args.task_name}_')[-1].split('_')[0]
@@ -38,9 +46,9 @@ if __name__ == "__main__":
                 data = json.load(file)
                 variation_id = int(data.get("variation_id", 0))
                 
-                if args.obj_set != "-1":
-                    color = OBJ_3_COLOR_LIST[int(variation_id/len(OBJ_3_COLOR_LIST))]
-                    # print(f"Color {color} - Variation id {variation_id}")
+                #if args.obj_set != "-1":
+                color = OBJ_3_COLOR_LIST[int(variation_id/len(OBJ_3_COLOR_LIST))]
+                print(f"Color {color} - Variation id {variation_id}")
                     
                 if variation_id in BLACK_LIST:
                     print(f"Skipping variation_id {variation_id}")
@@ -49,21 +57,22 @@ if __name__ == "__main__":
                 # print(f"Results from {file_path}:")
                 # print(json.dumps(data, indent=4))
                 if len(result[run_number]) == 0:
+                    
                     for metric in data.keys():
                         result[run_number][metric] = []
-                        if args.obj_set != "-1":
-                            for color in OBJ_3_COLOR_LIST:
-                                if color not in result[run_number].keys():
-                                    result[run_number][color] = dict()
-                                if metric not in result[run_number][color].keys():
-                                    result[run_number][color][metric] = []
+                        for color in OBJ_3_COLOR_LIST:
+                            if color not in result[run_number].keys():
+                                result[run_number][color] = dict()
+                            if metric not in result[run_number][color].keys():
+                                result[run_number][color][metric] = []
+                            
                           
                 for metric in data.keys():                  
                     # print(f"{color}-{metric}")
                     value = data[metric]
                     result[run_number][metric].append(value)
-                    if args.obj_set != "-1":
-                        result[run_number][color][metric].append(value)
+                    # if args.obj_set != "-1":
+                    result[run_number][color][metric].append(value)
 
     # Average the results for each run
     aggregated_results = dict()
@@ -109,7 +118,7 @@ if __name__ == "__main__":
     # print("Final Results:")
     # for metric, (mean, std) in final_results.items():
     #     print(f"{metric}: Mean = {mean:.4f}, Std = {std:.4f}")
-    # Save final results to a JSON file
+    #Save final results to a JSON file
     output_file = os.path.join(args.path, f"final_results_{args.task_name}_{args.change_obj_pos}_OoD_{args.ood}_obj_set_{args.obj_set}.json")
     with open(output_file, 'w') as f:
         json.dump(final_results, f, indent=4)    

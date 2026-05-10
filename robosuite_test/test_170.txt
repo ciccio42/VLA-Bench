@@ -1,0 +1,2489 @@
+Running evaluation for run 2 with change_spawn_regions: False
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+/raid/home/frosa_Loc/conda/envs/mimicplay_robosuite_1_0_1/lib/python3.9/site-packages/wandb/sdk/internal/internal_api.py:30: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import parse_version
+INFO:Logging to local log file: ./experiments/logs/EVAL-ur5e_pick_place-mimicplay-2026_05_07-10_34_31--ur5e_pick_place.txt
+/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/mimicplay/utils/file_utils.py:159: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  ckpt_dict = torch.load(ckpt_path)
+/raid/home/frosa_Loc/conda/envs/mimicplay_robosuite_1_0_1/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/raid/home/frosa_Loc/conda/envs/mimicplay_robosuite_1_0_1/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=None`.
+  warnings.warn(msg)
+/raid/home/frosa_Loc/conda/envs/mimicplay_robosuite_1_0_1/lib/python3.9/site-packages/torch/functional.py:513: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3609.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+Found 8 GPUs for rendering. Using device 2.
+Exception raised during import
+### Evaluating model ###
+EvalConfig(model_family='mimicplay', model_config=MimicPlayConfig(home_dir='/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/test', model_path='/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/test/20260421134144/models/model_epoch_170.pth', config_path='/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/test/20260421134144/config.json', highlevel_path='/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_highlevel_agent_UR5E_demo_HUMAN_3D_state_20_same_conf_with_valid/test/20260329220840/models/model_epoch_4000.pth', task_suite_name='ur5e_pick_place'), task_suite_name='ur5e_pick_place', run_id_note='ur5e_pick_place', num_steps_wait=10, num_trials_per_task=10, initial_states_path='DEFAULT', env_img_res=256, save=False, local_log_dir='./experiments/logs', use_wandb=False, wandb_entity='your-wandb-entity', wandb_project='your-wandb-project', seed=42, controller_path='/user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/test_robot/VLA-Bench/robosuite_test/tasks/multi_task_robosuite_env/controllers/config/osc_pose.json', debug=False, run_number=1, change_spawn_regions=False, change_command=False, object_set=-1, OoD=False, eval_multiple_checkpoint=False)
+Evaluating checkpoint: 170
+Running MimicPlay evaluation....
+ROBOMIMIC WARNING(
+    No private macro file found!
+    It is recommended to use a private macro file
+    To setup, run: python /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/robomimic/robomimic/scripts/setup_macros.py
+)
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['robot0_eef_quat_world', 'robot0_eef_pos_3d_camera', 'robot0_gripper_qpos', 'robot0_eef_pos_3d_world']
+using obs modality: rgb with keys: ['agentview_image', 'robot0_eye_in_hand_image']
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+Loading model with name: model_epoch_170.pth from checkpoint path: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/test/20260421134144/models/model_epoch_170.pth
+	Highlevel path: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_highlevel_agent_UR5E_demo_HUMAN_3D_state_20_same_conf_with_valid/test/20260329220840/models/model_epoch_4000.pth
+Loading model with name: model_epoch_4000.pth from checkpoint path: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_highlevel_agent_UR5E_demo_HUMAN_3D_state_20_same_conf_with_valid/test/20260329220840/models/model_epoch_4000.pth
+number of parameters: 41.82M
+MimicPlay model loaded successfully.
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 0
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 0, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.027420555526886752
+Evaluated traj #0, task#0, reached? 0 picked? 0 success? 0 
+Reached rate: 0.00
+Picked rate: 0.00
+Success rate: 0.00
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 1
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 1, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.021858172201032016
+Evaluated traj #1, task#1, reached? 0 picked? 0 success? 0 
+Reached rate: 0.00
+Picked rate: 0.00
+Success rate: 0.00
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 2
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 2, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022026779663622677
+Evaluated traj #2, task#2, reached? 1 picked? 0 success? 0 
+Reached rate: 0.33
+Picked rate: 0.00
+Success rate: 0.00
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 3
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 3, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.021644501230824533
+Evaluated traj #3, task#3, reached? 1 picked? 1 success? 1 
+Reached rate: 0.50
+Picked rate: 0.25
+Success rate: 0.25
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 4
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 4, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022043895481818884
+Evaluated traj #4, task#4, reached? 1 picked? 1 success? 1 
+Reached rate: 0.60
+Picked rate: 0.40
+Success rate: 0.40
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 5
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 5, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 1.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.0222289288180998
+Evaluated traj #5, task#5, reached? 0 picked? 0 success? 0 
+Reached rate: 0.50
+Picked rate: 0.33
+Success rate: 0.33
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 6
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 6, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022165707008323477
+Evaluated traj #6, task#6, reached? 1 picked? 0 success? 0 
+Reached rate: 0.57
+Picked rate: 0.29
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 7
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 7, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022450248200689728
+Evaluated traj #7, task#7, reached? 0 picked? 0 success? 0 
+Reached rate: 0.50
+Picked rate: 0.25
+Success rate: 0.25
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 8
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 8, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022043556424241568
+Evaluated traj #8, task#8, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.22
+Success rate: 0.22
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 9
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 9, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02212063151987354
+Evaluated traj #9, task#9, reached? 1 picked? 1 success? 1 
+Reached rate: 0.50
+Picked rate: 0.30
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 10
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 10, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022019163254768617
+Evaluated traj #10, task#10, reached? 0 picked? 0 success? 0 
+Reached rate: 0.45
+Picked rate: 0.27
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 11
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 11, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.021727313947437994
+Evaluated traj #11, task#11, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.25
+Success rate: 0.25
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 12
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 12, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.021972097602545048
+Evaluated traj #12, task#12, reached? 0 picked? 0 success? 0 
+Reached rate: 0.38
+Picked rate: 0.23
+Success rate: 0.23
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 13
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 13, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02250240795576393
+Evaluated traj #13, task#13, reached? 0 picked? 0 success? 0 
+Reached rate: 0.36
+Picked rate: 0.21
+Success rate: 0.21
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 14
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 14, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02178645133972168
+Evaluated traj #14, task#14, reached? 0 picked? 0 success? 0 
+Reached rate: 0.33
+Picked rate: 0.20
+Success rate: 0.20
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 15
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 15, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022037420774761
+Evaluated traj #15, task#15, reached? 1 picked? 1 success? 1 
+Reached rate: 0.38
+Picked rate: 0.25
+Success rate: 0.25
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 0
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 0, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.021733564274911663
+Evaluated traj #16, task#0, reached? 1 picked? 1 success? 1 
+Reached rate: 0.41
+Picked rate: 0.29
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 1
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 1, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.0219219557603999
+Evaluated traj #17, task#1, reached? 0 picked? 0 success? 0 
+Reached rate: 0.39
+Picked rate: 0.28
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 2
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 2, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022354947861714578
+Evaluated traj #18, task#2, reached? 0 picked? 0 success? 0 
+Reached rate: 0.37
+Picked rate: 0.26
+Success rate: 0.26
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 3
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 3, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022038670640494955
+Evaluated traj #19, task#3, reached? 0 picked? 0 success? 0 
+Reached rate: 0.35
+Picked rate: 0.25
+Success rate: 0.25
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 4
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 4, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022053332950757898
+Evaluated traj #20, task#4, reached? 0 picked? 0 success? 0 
+Reached rate: 0.33
+Picked rate: 0.24
+Success rate: 0.24
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 5
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 5, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.021740389248681446
+Evaluated traj #21, task#5, reached? 0 picked? 0 success? 0 
+Reached rate: 0.32
+Picked rate: 0.23
+Success rate: 0.23
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 6
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 6, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022067455790150705
+Evaluated traj #22, task#6, reached? 1 picked? 0 success? 0 
+Reached rate: 0.35
+Picked rate: 0.22
+Success rate: 0.22
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 7
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 7, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022044965370216562
+Evaluated traj #23, task#7, reached? 0 picked? 0 success? 0 
+Reached rate: 0.33
+Picked rate: 0.21
+Success rate: 0.21
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 8
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 8, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.021979502098045157
+Evaluated traj #24, task#8, reached? 0 picked? 0 success? 0 
+Reached rate: 0.32
+Picked rate: 0.20
+Success rate: 0.20
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 9
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 9, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02231394705460898
+Evaluated traj #25, task#9, reached? 0 picked? 0 success? 0 
+Reached rate: 0.31
+Picked rate: 0.19
+Success rate: 0.19
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 10
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 10, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022057920245069956
+Evaluated traj #26, task#10, reached? 1 picked? 1 success? 1 
+Reached rate: 0.33
+Picked rate: 0.22
+Success rate: 0.22
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 11
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 11, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02165923920352902
+Evaluated traj #27, task#11, reached? 1 picked? 1 success? 1 
+Reached rate: 0.36
+Picked rate: 0.25
+Success rate: 0.25
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 12
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 12, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022470312889176187
+Evaluated traj #28, task#12, reached? 1 picked? 1 success? 1 
+Reached rate: 0.38
+Picked rate: 0.28
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 13
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 13, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 1.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.023236698292671366
+Evaluated traj #29, task#13, reached? 0 picked? 0 success? 0 
+Reached rate: 0.37
+Picked rate: 0.27
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 14
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 14, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 1.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022747913185431033
+Evaluated traj #30, task#14, reached? 0 picked? 0 success? 0 
+Reached rate: 0.35
+Picked rate: 0.26
+Success rate: 0.26
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 15
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 15, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022312057429346544
+Evaluated traj #31, task#15, reached? 0 picked? 0 success? 0 
+Reached rate: 0.34
+Picked rate: 0.25
+Success rate: 0.25
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 0
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 0, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022276821343795113
+Evaluated traj #32, task#0, reached? 1 picked? 1 success? 1 
+Reached rate: 0.36
+Picked rate: 0.27
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 1
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 1, 'variation_id': 1, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 1.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.0219619072089761
+Evaluated traj #33, task#1, reached? 1 picked? 1 success? 0 
+Reached rate: 0.38
+Picked rate: 0.29
+Success rate: 0.26
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 2
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 2, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02221022626405121
+Evaluated traj #34, task#2, reached? 0 picked? 0 success? 0 
+Reached rate: 0.37
+Picked rate: 0.29
+Success rate: 0.26
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 3
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 3, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.021948365110847818
+Evaluated traj #35, task#3, reached? 0 picked? 0 success? 0 
+Reached rate: 0.36
+Picked rate: 0.28
+Success rate: 0.25
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 4
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 4, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.021760526014931836
+Evaluated traj #36, task#4, reached? 0 picked? 0 success? 0 
+Reached rate: 0.35
+Picked rate: 0.27
+Success rate: 0.24
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 5
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 5, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.021598269591978445
+Evaluated traj #37, task#5, reached? 0 picked? 0 success? 0 
+Reached rate: 0.34
+Picked rate: 0.26
+Success rate: 0.24
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 6
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 6, 'reached_wrong': 1.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02212433479539114
+Evaluated traj #38, task#6, reached? 0 picked? 0 success? 0 
+Reached rate: 0.33
+Picked rate: 0.26
+Success rate: 0.23
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 7
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 7, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022227984576968094
+Evaluated traj #39, task#7, reached? 1 picked? 0 success? 0 
+Reached rate: 0.35
+Picked rate: 0.25
+Success rate: 0.23
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 8
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 1, 'variation_id': 8, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022285106793120877
+Evaluated traj #40, task#8, reached? 1 picked? 1 success? 0 
+Reached rate: 0.37
+Picked rate: 0.27
+Success rate: 0.22
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 9
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 9, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022175811684649924
+Evaluated traj #41, task#9, reached? 0 picked? 0 success? 0 
+Reached rate: 0.36
+Picked rate: 0.26
+Success rate: 0.21
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 10
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 10, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.021714348263210722
+Evaluated traj #42, task#10, reached? 1 picked? 1 success? 1 
+Reached rate: 0.37
+Picked rate: 0.28
+Success rate: 0.23
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 11
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 11, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.021870876676473187
+Evaluated traj #43, task#11, reached? 1 picked? 0 success? 0 
+Reached rate: 0.39
+Picked rate: 0.27
+Success rate: 0.23
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 12
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 12, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022357129571425854
+Evaluated traj #44, task#12, reached? 0 picked? 0 success? 0 
+Reached rate: 0.38
+Picked rate: 0.27
+Success rate: 0.22
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 13
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 13, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02187229281094805
+Evaluated traj #45, task#13, reached? 0 picked? 0 success? 0 
+Reached rate: 0.37
+Picked rate: 0.26
+Success rate: 0.22
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 14
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 14, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022079635234106155
+Evaluated traj #46, task#14, reached? 1 picked? 1 success? 1 
+Reached rate: 0.38
+Picked rate: 0.28
+Success rate: 0.23
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 15
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 15, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02251631291068379
+Evaluated traj #47, task#15, reached? 0 picked? 0 success? 0 
+Reached rate: 0.38
+Picked rate: 0.27
+Success rate: 0.23
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 0
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 0, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02256711044503217
+Evaluated traj #48, task#0, reached? 0 picked? 0 success? 0 
+Reached rate: 0.37
+Picked rate: 0.27
+Success rate: 0.22
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 1
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 1, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022028214967430536
+Evaluated traj #49, task#1, reached? 0 picked? 0 success? 0 
+Reached rate: 0.36
+Picked rate: 0.26
+Success rate: 0.22
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 2
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 2, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02186402723417809
+Evaluated traj #50, task#2, reached? 1 picked? 1 success? 1 
+Reached rate: 0.37
+Picked rate: 0.27
+Success rate: 0.24
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 3
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 3, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02177055243289832
+Evaluated traj #51, task#3, reached? 1 picked? 1 success? 1 
+Reached rate: 0.38
+Picked rate: 0.29
+Success rate: 0.25
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 4
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 4, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02175425524687647
+Evaluated traj #52, task#4, reached? 0 picked? 0 success? 0 
+Reached rate: 0.38
+Picked rate: 0.28
+Success rate: 0.25
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 5
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 5, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.021610229918100302
+Evaluated traj #53, task#5, reached? 1 picked? 1 success? 1 
+Reached rate: 0.39
+Picked rate: 0.30
+Success rate: 0.26
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 6
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 6, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02213096076791937
+Evaluated traj #54, task#6, reached? 1 picked? 1 success? 1 
+Reached rate: 0.40
+Picked rate: 0.31
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 7
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 7, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022076272485244214
+Evaluated traj #55, task#7, reached? 1 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.30
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 8
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 8, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02237610960725564
+Evaluated traj #56, task#8, reached? 1 picked? 1 success? 1 
+Reached rate: 0.42
+Picked rate: 0.32
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 9
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 9, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02171699373345626
+Evaluated traj #57, task#9, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 10
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 10, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022110075207810904
+Evaluated traj #58, task#10, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.31
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 11
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 11, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.021525668668317365
+Evaluated traj #59, task#11, reached? 0 picked? 0 success? 0 
+Reached rate: 0.40
+Picked rate: 0.30
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 12
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 12, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022360184683871628
+Evaluated traj #60, task#12, reached? 0 picked? 0 success? 0 
+Reached rate: 0.39
+Picked rate: 0.30
+Success rate: 0.26
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 13
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 13, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022475111775281952
+Evaluated traj #61, task#13, reached? 1 picked? 1 success? 1 
+Reached rate: 0.40
+Picked rate: 0.31
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 14
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 14, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.021875481769956392
+Evaluated traj #62, task#14, reached? 1 picked? 1 success? 1 
+Reached rate: 0.41
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 15
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 15, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02199798583984375
+Evaluated traj #63, task#15, reached? 1 picked? 1 success? 1 
+Reached rate: 0.42
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 0
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 0, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02218884559132945
+Evaluated traj #64, task#0, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 1
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 1, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.021591215663486058
+Evaluated traj #65, task#1, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 2
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 2, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022093372728357364
+Evaluated traj #66, task#2, reached? 0 picked? 0 success? 0 
+Reached rate: 0.40
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 3
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 3, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.023377097431738773
+Evaluated traj #67, task#3, reached? 1 picked? 1 success? 1 
+Reached rate: 0.41
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 4
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 4, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022436909939176474
+Evaluated traj #68, task#4, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 5
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 5, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022230425747958096
+Evaluated traj #69, task#5, reached? 0 picked? 0 success? 0 
+Reached rate: 0.40
+Picked rate: 0.31
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 6
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 6, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022362111201837433
+Evaluated traj #70, task#6, reached? 1 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 7
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 7, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022110613147218024
+Evaluated traj #71, task#7, reached? 0 picked? 0 success? 0 
+Reached rate: 0.40
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 8
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 8, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022326021338228006
+Evaluated traj #72, task#8, reached? 1 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.30
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 9
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 9, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.021668848100599353
+Evaluated traj #73, task#9, reached? 1 picked? 1 success? 1 
+Reached rate: 0.42
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 10
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 10, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02228578011594226
+Evaluated traj #74, task#10, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 11
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 11, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022456444731546104
+Evaluated traj #75, task#11, reached? 1 picked? 1 success? 1 
+Reached rate: 0.42
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 12
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 12, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022351272070585793
+Evaluated traj #76, task#12, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.31
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 13
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 13, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022226822436155386
+Evaluated traj #77, task#13, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 14
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 14, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02210821135569427
+Evaluated traj #78, task#14, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.30
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 15
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 15, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.021916116659457866
+Evaluated traj #79, task#15, reached? 1 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.30
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 0
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 0, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02220973057962542
+Evaluated traj #80, task#0, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.30
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 1
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 1, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022357782760223786
+Evaluated traj #81, task#1, reached? 0 picked? 0 success? 0 
+Reached rate: 0.40
+Picked rate: 0.29
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 2
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 2, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02213867225838666
+Evaluated traj #82, task#2, reached? 0 picked? 0 success? 0 
+Reached rate: 0.40
+Picked rate: 0.29
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 3
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 3, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02253439318594621
+Evaluated traj #83, task#3, reached? 1 picked? 1 success? 1 
+Reached rate: 0.40
+Picked rate: 0.30
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 4
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 4, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02281770035250103
+Evaluated traj #84, task#4, reached? 0 picked? 0 success? 0 
+Reached rate: 0.40
+Picked rate: 0.29
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 5
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 5, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.0220838562472836
+Evaluated traj #85, task#5, reached? 1 picked? 1 success? 1 
+Reached rate: 0.41
+Picked rate: 0.30
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 6
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 6, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022569621650918015
+Evaluated traj #86, task#6, reached? 1 picked? 1 success? 1 
+Reached rate: 0.41
+Picked rate: 0.31
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 7
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 7, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.0224317701617677
+Evaluated traj #87, task#7, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 8
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 8, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022653243050503372
+Evaluated traj #88, task#8, reached? 0 picked? 0 success? 0 
+Reached rate: 0.40
+Picked rate: 0.30
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 9
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 9, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 1.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022391289322819544
+Evaluated traj #89, task#9, reached? 0 picked? 0 success? 0 
+Reached rate: 0.40
+Picked rate: 0.30
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 10
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 10, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022326706641882507
+Evaluated traj #90, task#10, reached? 1 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.30
+Success rate: 0.27
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 11
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 11, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022359507424490794
+Evaluated traj #91, task#11, reached? 1 picked? 1 success? 1 
+Reached rate: 0.41
+Picked rate: 0.30
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 12
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 12, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022406676331081905
+Evaluated traj #92, task#12, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.30
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 13
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 13, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02385493243734042
+Evaluated traj #93, task#13, reached? 1 picked? 1 success? 1 
+Reached rate: 0.41
+Picked rate: 0.31
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 14
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 14, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022287782033284506
+Evaluated traj #94, task#14, reached? 1 picked? 1 success? 1 
+Reached rate: 0.42
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 15
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 15, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.023099023493091064
+Evaluated traj #95, task#15, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.31
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 0
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 0, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02211539709388311
+Evaluated traj #96, task#0, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.31
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 1
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 1, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022270901758867995
+Evaluated traj #97, task#1, reached? 1 picked? 1 success? 1 
+Reached rate: 0.42
+Picked rate: 0.32
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 2
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 2, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022563633607260547
+Evaluated traj #98, task#2, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.31
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 3
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 3, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02221357642705716
+Evaluated traj #99, task#3, reached? 1 picked? 1 success? 1 
+Reached rate: 0.42
+Picked rate: 0.32
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 4
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 4, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02154665231704712
+Evaluated traj #100, task#4, reached? 1 picked? 1 success? 1 
+Reached rate: 0.43
+Picked rate: 0.33
+Success rate: 0.31
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 5
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 5, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022260017730482858
+Evaluated traj #101, task#5, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.32
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 6
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 1, 'variation_id': 6, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 1.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02185585522892499
+Evaluated traj #102, task#6, reached? 1 picked? 1 success? 0 
+Reached rate: 0.43
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 7
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 7, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02229688035782857
+Evaluated traj #103, task#7, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 8
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 8, 'reached_wrong': 1.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02264013961331928
+Evaluated traj #104, task#8, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.32
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 9
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 9, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02224344943636027
+Evaluated traj #105, task#9, reached? 1 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 10
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 10, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.024051593176683587
+Evaluated traj #106, task#10, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 11
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 11, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02244510901601691
+Evaluated traj #107, task#11, reached? 1 picked? 1 success? 1 
+Reached rate: 0.43
+Picked rate: 0.32
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 12
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 12, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022218921076712295
+Evaluated traj #108, task#12, reached? 1 picked? 1 success? 1 
+Reached rate: 0.43
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 13
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 13, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022662607106295498
+Evaluated traj #109, task#13, reached? 0 picked? 0 success? 0 
+Reached rate: 0.43
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 14
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 14, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02263115997889533
+Evaluated traj #110, task#14, reached? 1 picked? 0 success? 0 
+Reached rate: 0.43
+Picked rate: 0.32
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 15
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 15, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.023000616524087723
+Evaluated traj #111, task#15, reached? 0 picked? 0 success? 0 
+Reached rate: 0.43
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 0
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 0, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022241345223258522
+Evaluated traj #112, task#0, reached? 1 picked? 1 success? 1 
+Reached rate: 0.43
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 1
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 1, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 1.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022308731653604162
+Evaluated traj #113, task#1, reached? 0 picked? 0 success? 0 
+Reached rate: 0.43
+Picked rate: 0.32
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 2
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 2, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.0220364314227847
+Evaluated traj #114, task#2, reached? 0 picked? 0 success? 0 
+Reached rate: 0.43
+Picked rate: 0.32
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 3
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 3, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022273325003110446
+Evaluated traj #115, task#3, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 4
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 4, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02218765765428543
+Evaluated traj #116, task#4, reached? 1 picked? 0 success? 0 
+Reached rate: 0.43
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 5
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 5, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022105111573871815
+Evaluated traj #117, task#5, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.31
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 6
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 6, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02232023699199734
+Evaluated traj #118, task#6, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.31
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 7
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 7, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022505522972375305
+Evaluated traj #119, task#7, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 8
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 8, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02240766472552889
+Evaluated traj #120, task#8, reached? 0 picked? 0 success? 0 
+Reached rate: 0.41
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 9
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 9, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022711992263793945
+Evaluated traj #121, task#9, reached? 1 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.30
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 10
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 10, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02242858118290524
+Evaluated traj #122, task#10, reached? 1 picked? 1 success? 1 
+Reached rate: 0.42
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 11
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 1, 'variation_id': 11, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02243463717513348
+Evaluated traj #123, task#11, reached? 1 picked? 1 success? 0 
+Reached rate: 0.43
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 12
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 12, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022625612732548043
+Evaluated traj #124, task#12, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 13
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 13, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022372173328025668
+Evaluated traj #125, task#13, reached? 0 picked? 0 success? 0 
+Reached rate: 0.42
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 14
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 14, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02221664112416943
+Evaluated traj #126, task#14, reached? 1 picked? 1 success? 1 
+Reached rate: 0.43
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 15
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 15, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.0222394118955986
+Evaluated traj #127, task#15, reached? 1 picked? 0 success? 0 
+Reached rate: 0.43
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 0
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 0, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02270526382791337
+Evaluated traj #128, task#0, reached? 1 picked? 1 success? 1 
+Reached rate: 0.43
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 1
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 1, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02245988164629255
+Evaluated traj #129, task#1, reached? 1 picked? 1 success? 1 
+Reached rate: 0.44
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 2
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 2, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02218973696531363
+Evaluated traj #130, task#2, reached? 1 picked? 1 success? 1 
+Reached rate: 0.44
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 3
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 3, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022237247890896268
+Evaluated traj #131, task#3, reached? 1 picked? 1 success? 1 
+Reached rate: 0.45
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 4
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 4, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022451198280756198
+Evaluated traj #132, task#4, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 5
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 5, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 1.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022426519704901653
+Evaluated traj #133, task#5, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 6
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 6, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.0224324255133394
+Evaluated traj #134, task#6, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 7
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 7, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02214313991105736
+Evaluated traj #135, task#7, reached? 1 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 8
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 8, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022168174503356453
+Evaluated traj #136, task#8, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 9
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 9, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02235111274288199
+Evaluated traj #137, task#9, reached? 1 picked? 1 success? 1 
+Reached rate: 0.44
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 10
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 1, 'variation_id': 10, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 1.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022471594451060846
+Evaluated traj #138, task#10, reached? 1 picked? 1 success? 0 
+Reached rate: 0.45
+Picked rate: 0.33
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 11
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 11, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022165843589821054
+Evaluated traj #139, task#11, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.33
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 12
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 12, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022564754691175234
+Evaluated traj #140, task#12, reached? 1 picked? 1 success? 1 
+Reached rate: 0.45
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 13
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 13, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 1.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022337713695707775
+Evaluated traj #141, task#13, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 14
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 14, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022124665124075755
+Evaluated traj #142, task#14, reached? 1 picked? 1 success? 1 
+Reached rate: 0.45
+Picked rate: 0.34
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 15
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 15, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022178775481595338
+Evaluated traj #143, task#15, reached? 1 picked? 1 success? 1 
+Reached rate: 0.45
+Picked rate: 0.34
+Success rate: 0.31
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 0
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 0, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02295721901787652
+Evaluated traj #144, task#0, reached? 0 picked? 0 success? 0 
+Reached rate: 0.45
+Picked rate: 0.34
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 1
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 1, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022047829987415717
+Evaluated traj #145, task#1, reached? 0 picked? 0 success? 0 
+Reached rate: 0.45
+Picked rate: 0.34
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 2
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+Success!
+{'success': 1, 'reached': 1, 'picked': 1, 'variation_id': 2, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022567010787596185
+Evaluated traj #146, task#2, reached? 1 picked? 1 success? 1 
+Reached rate: 0.45
+Picked rate: 0.34
+Success rate: 0.31
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 3
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 3, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02254316914620711
+Evaluated traj #147, task#3, reached? 0 picked? 0 success? 0 
+Reached rate: 0.45
+Picked rate: 0.34
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 4
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 4, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02243770067416244
+Evaluated traj #148, task#4, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.34
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 5
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 5, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02230058722759611
+Evaluated traj #149, task#5, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 6
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 6, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022046773277934473
+Evaluated traj #150, task#6, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 7
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 7, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022204890323044665
+Evaluated traj #151, task#7, reached? 1 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.33
+Success rate: 0.30
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 8
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 8, 'reached_wrong': 1.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022319600809758634
+Evaluated traj #152, task#8, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.33
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 9
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 9, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02239780766623361
+Evaluated traj #153, task#9, reached? 0 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 10
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 10, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02197390444138471
+Evaluated traj #154, task#10, reached? 0 picked? 0 success? 0 
+Reached rate: 0.43
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 11
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 11, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022319908717169833
+Evaluated traj #155, task#11, reached? 1 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 12
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 12, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.02224091309398862
+Evaluated traj #156, task#12, reached? 0 picked? 0 success? 0 
+Reached rate: 0.43
+Picked rate: 0.32
+Success rate: 0.29
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 13
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 1, 'picked': 0, 'variation_id': 13, 'reached_wrong': 0.0, 'picked_wrong': 0.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 0.0}
+Mean elapsed time 0.022176977378040103
+Evaluated traj #157, task#13, reached? 1 picked? 0 success? 0 
+Reached rate: 0.44
+Picked rate: 0.32
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 14
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 14, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.02201344528976752
+Evaluated traj #158, task#14, reached? 0 picked? 0 success? 0 
+Reached rate: 0.43
+Picked rate: 0.31
+Success rate: 0.28
+Saving rollout to: /user/frosa/Multi-Task-LFD-Framework/repo/mimic-play/MimicPlay/trained_models_lowlevel_demo_human_agent_ur5e_3D_state_same_conf_with_valid_modes_5/rollout_pick_place_1_False_obj_set_-1_change_command_False_epoch_170
+GPU-ID 2
+UR5e_PickPlaceDistractor
+Render GPU id 2
+Object set 2
+Running Task Description: 15
+Using MimicPlay policy - overriding task description with human demo
+Using same conf and different spawn human demo - not changing spawn region
+Max-t 200
+{'success': 0, 'reached': 0, 'picked': 0, 'variation_id': 15, 'reached_wrong': 1.0, 'picked_wrong': 1.0, 'place_wrong': 0.0, 'place_wrong_correct_obj': 0.0, 'place_wrong_wrong_obj': 0.0, 'place_correct_bin_wrong_obj': 1.0}
+Mean elapsed time 0.022016304821225265
+Evaluated traj #159, task#15, reached? 0 picked? 0 success? 0 
+Reached rate: 0.43
+Picked rate: 0.31
+Success rate: 0.28
+Reached rate: 0.43
+Picked rate: 0.31
+Success rate: 0.28
+te: 0.31
+Success rate: 0.29

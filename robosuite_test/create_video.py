@@ -41,9 +41,10 @@ if __name__ == '__main__':
 
         with imageio.get_writer(video_name, fps=10, codec='libx264') as writer:
             for t in range(len(traj) - 1):
-                img = traj[t]['obs']['camera_front_image']
+                #img = traj[t]['obs']['camera_front_image']
+                img = traj[t]['obs']['image_concat']
                 img_pil = Image.fromarray(img)  # Keep as RGB for imageio
-                draw = ImageDraw.Draw(img_pil)
+                #draw = ImageDraw.Draw(img_pil)
 
                 try:
                     font = ImageFont.truetype("arial.ttf", 14)
@@ -54,15 +55,15 @@ if __name__ == '__main__':
                 text_bg_padding = 4
 
                 # Compute text bounding box
-                bbox = draw.textbbox((0, 0), task_description, font=font)
-                text_width = bbox[2] - bbox[0]
-                text_height = bbox[3] - bbox[1]
+                #bbox = draw.textbbox((0, 0), task_description, font=font)
+                #text_width = bbox[2] - bbox[0]
+                #text_height = bbox[3] - bbox[1]
 
-                rect_start = (text_position[0] - text_bg_padding, text_position[1] - text_bg_padding)
-                rect_end = (text_position[0] + text_width + text_bg_padding, text_position[1] + text_height + text_bg_padding)
+                #rect_start = (text_position[0] - text_bg_padding, text_position[1] - text_bg_padding)
+                #rect_end = (text_position[0] + text_width + text_bg_padding, text_position[1] + text_height + text_bg_padding)
 
-                draw.rectangle([rect_start, rect_end], fill=(0, 0, 0))
-                draw.text(text_position, task_description, fill=(0, 255, 0), font=font)
+                #draw.rectangle([rect_start, rect_end], fill=(0, 0, 0))
+                #draw.text(text_position, task_description, fill=(0, 255, 0), font=font)
 
                 writer.append_data(np.array(img_pil))
 

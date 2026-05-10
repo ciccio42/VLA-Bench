@@ -6,6 +6,7 @@ import draccus
 import numpy as np
 import pickle as pkl
 import random
+import glob
 
 # import Configuration File
 sys.path.append('../.')
@@ -32,120 +33,169 @@ def eval_robosuite(cfg: EvalConfig) -> float:
     #     set_seed_everywhere(0)
     # else:    
     
-    set_seed_everywhere(cfg.seed)
+    
     # Setup logging
     log_file, local_log_filepath, run_id = setup_logging(cfg)
     # Get expected image dimensions
     resize_size = get_image_resize_size(cfg)
     
-    # Initialize Models
-    run_episode_fn = None
-    if cfg.model_family.lower() == "openvla":
-        from robosuite_test.models.openvla import open_vla_policy
-        # Validate configuration
-        print(f"Running OpenVLA evaluation....")
-        policy = open_vla_policy(cfg.model_config)
-    elif cfg.model_family.lower() == "tinyvla":
-        from robosuite_test.models.tinyvla import llava_pythia_act_policy
-        print(f"Running TinyVLA evaluation....")
-        policy = llava_pythia_act_policy(cfg.model_config)
-        #run_tinyvla_eval(cfg)
     
-    
-    # # Initialize Robosuite environment
-    # np.random.seed(42) # 42
-    # random.seed(42)
-    success_cnt = 0
-    reached_cnt = 0
-    picked_cnt = 0
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),"seeds/seeds.txt"), 'r') as f:
-        lines = f.readlines()
-        seeds = [int(line.strip()) for line in lines]
-    
-    test_variations = TASK_VARIATION_DICT[cfg.task_suite_name]
-    
-    for ctr in range(cfg.num_trials_per_task*len(test_variations)):
-        variation_id = test_variations[ctr % len(test_variations)]
-        env_seed = seeds[ctr % len(seeds)]
-        gpu_id = 0
+    if cfg.eval_multiple_checkpoint:
+        checkpoint_dir = os.path.dirname(cfg.model_config.model_path)
+        # checkpoint list
+        if  cfg.model_family.lower() == "mimicplay":
+            checkpoint_list = glob.glob(os.path.join(checkpoint_dir, "model_epoch_*.pth"))
+            # sort by epoch number    
+            checkpoint_list = sorted(checkpoint_list, 
+                                     key=lambda x: int(x.split("model_epoch_")[1].split("_")[0].split(".pth")[0]))
+            # remove checkpoints that have 'best' in the name
+            checkpoint_list = [ckpt for ckpt in checkpoint_list if "best" not in ckpt]
+            
+            # evaluate checkpoint every 10 epochs
+            checkpoint_list = checkpoint_list[::1]
+            
+            num_trial = 5 # 5 trials per checkpoint for model comparison experiments
+            
+    else:
+        checkpoint_list = [cfg.model_config.model_path]
+        num_trial = cfg.num_trials_per_task
+        if cfg.run_number == 0:
+            cfg.save = True
         
-        if 'pick_place' in cfg.task_suite_name:
-            env_name = 'pick_place'
-            
-        # save trajectory and info
-        save_path = os.path.join(cfg.model_config.model_path, f"rollout_{env_name}_{cfg.run_number}_{cfg.change_spawn_regions}_obj_set_{cfg.object_set}_change_command_{cfg.change_command}")#_task_list_{test_variations}")
-        os.makedirs(save_path, exist_ok=True)
-        print(f"Saving rollout to: {save_path}")
-        if os.path.exists(os.path.join(save_path, f"info_{ctr}.json")):
-            print(f"Trajectory {ctr} already exists, skipping...")
-            
-            # load results json file
-            with open(os.path.join(save_path, f"info_{ctr}.json"), "r") as f:
-                info = json.load(f)
-                success_cnt += info['success']
-                reached_cnt += info['reached']
-                picked_cnt += info['picked']
-                print(f"Reached rate: {reached_cnt / (ctr + 1):.2f}")
-                print(f"Picked rate: {picked_cnt / (ctr + 1):.2f}")
-                print(f"Success rate: {success_cnt / (ctr + 1):.2f}")
-            continue
-            
-        env = build_env_context(env_name=env_name,
-                        controller_path=cfg.controller_path,
-                        variation=variation_id,
-                        seed=env_seed,
-                        gpu_id=gpu_id,
-                        object_set=cfg.object_set)
-        eval_fn = get_eval_fn(env_name=env_name)
+    
         
-        if cfg.object_set == -1:
-            task_description = COMMAND[env_name][str(variation_id)]
-        else:
-            task_description = COMMAND[f"{env_name}_{cfg.object_set}"][str(variation_id)]
+    for checkpoint_path in checkpoint_list:
+        set_seed_everywhere(cfg.seed)
+        epoch_num = checkpoint_path.split("model_epoch_")[1].split("_")[0].split(".pth")[0]
+        print(f"Evaluating checkpoint: {epoch_num}")
+        cfg.model_config.model_path = checkpoint_path
+        # Initialize Models
+        run_episode_fn = None
+        if cfg.model_family.lower() == "openvla":
+            from robosuite_test.models.openvla import open_vla_policy
+            # Validate configuration
+            print(f"Running OpenVLA evaluation....")
+            policy = open_vla_policy(cfg.model_config)
+        elif cfg.model_family.lower() == "tinyvla":
+            from robosuite_test.models.tinyvla import llava_pythia_act_policy
+            print(f"Running TinyVLA evaluation....")
+            policy = llava_pythia_act_policy(cfg.model_config)
+            #run_tinyvla_eval(cfg)
+        elif cfg.model_family.lower() == "mimicplay":
+            print(f"Running MimicPlay evaluation....")
+            from robosuite_test.models.mimicplay import MimicPlayPolicy
+            policy = MimicPlayPolicy(cfg.model_config)
+    
+    
+        # # Initialize Robosuite environment
+        # np.random.seed(42) # 42
+        # random.seed(42)
+        success_cnt = 0
+        reached_cnt = 0
+        picked_cnt = 0
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),"seeds/seeds.txt"), 'r') as f:
+            lines = f.readlines()
+            seeds = [int(line.strip()) for line in lines]
+        
+        test_variations = TASK_VARIATION_DICT[cfg.task_suite_name]
+    
+        for ctr in range(num_trial*len(test_variations)):
+            variation_id = test_variations[ctr % len(test_variations)]
+            env_seed = seeds[ctr % len(seeds)]
+            gpu_id = 0
+            
+            if 'pick_place' in cfg.task_suite_name:
+                env_name = 'pick_place'
+                
+            # save trajectory and info
+            if cfg.model_family.lower() == "mimicplay":
+                path_base = os.path.dirname(cfg.model_config.home_dir)
+            else:
+                path_base = cfg.model_config.model_path
+        
+            save_path = os.path.join(path_base, f"rollout_{env_name}_{cfg.run_number}_{cfg.change_spawn_regions}_obj_set_{cfg.object_set}_change_command_{cfg.change_command}_epoch_{epoch_num}")#_task_list_{test_variations}")
+            os.makedirs(save_path, exist_ok=True)
+            print(f"Saving rollout to: {save_path}")
+            if os.path.exists(os.path.join(save_path, f"info_{ctr}.json")):
+                print(f"Trajectory {ctr} already exists, skipping...")
+                
+                # load results json file
+                with open(os.path.join(save_path, f"info_{ctr}.json"), "r") as f:
+                    info = json.load(f)
+                    success_cnt += info['success']
+                    reached_cnt += info['reached']
+                    picked_cnt += info['picked']
+                    print(f"Reached rate: {reached_cnt / (ctr + 1):.2f}")
+                    print(f"Picked rate: {picked_cnt / (ctr + 1):.2f}")
+                    print(f"Success rate: {success_cnt / (ctr + 1):.2f}")
+                continue
+                
+            env = build_env_context(env_name=env_name,
+                            controller_path=cfg.controller_path,
+                            variation=variation_id,
+                            seed=env_seed,
+                            gpu_id=gpu_id,
+                            object_set=cfg.object_set)
+            eval_fn = get_eval_fn(env_name=env_name)
+            
+            if cfg.object_set == -1 and not cfg.model_family.lower() == "mimicplay":
+                task_description = COMMAND[env_name][str(variation_id)]
+            elif cfg.object_set != -1 and not cfg.model_family.lower() == "mimicplay":
+                task_description = COMMAND[f"{env_name}_{cfg.object_set}"][str(variation_id)]
+            elif cfg.model_family.lower() == "mimicplay":
+                # with mimicplay, the task description is obtained from the human demo
+                task_description = variation_id
+                
+
+            if cfg.change_command:
+                if 'red' in task_description:
+                    task_description = task_description.replace('red', 'orange')
+            print(f"Running Task Description: {task_description}")
+            
+            # remove saved images
+            # shutil.rmtree("./images/", ignore_errors=True)
+            if cfg.model_family.lower() == "mimicplay":
+                policy.policy.start_episode()
+            
+            traj, info = eval_fn(cfg = cfg,  
+                                policy = policy, 
+                                env = env, 
+                                variation_id = variation_id, 
+                                max_T = TASK_MAX_STEPS[cfg.task_suite_name], 
+                                resize_size = resize_size, 
+                                task_description= task_description,
+                                task_name = env_name,
+                                change_spawn_regions=cfg.change_spawn_regions)
+        
+            
+            print("Evaluated traj #{}, task#{}, reached? {} picked? {} success? {} ".format(ctr, variation_id, info['reached'], info['picked'], info['success']))
+            success_cnt += info['success']
+            reached_cnt += info['reached']
+            picked_cnt += info['picked']
+            
+            traj._data[0][0]['task_description'] = task_description
+            
+            if cfg.save:
+                pkl.dump(traj, open(os.path.join(save_path, f"traj_{ctr}.pkl"), "wb"))
+            
+            # Save info
+            with open(os.path.join(save_path, f"info_{ctr}.json"), "w") as f:
+                json.dump(info, f, indent=4)
+            
+            print(f"Reached rate: {reached_cnt / (ctr + 1):.2f}")
+            print(f"Picked rate: {picked_cnt / (ctr + 1):.2f}")
+            print(f"Success rate: {success_cnt / (ctr + 1):.2f}")
             
 
-        if cfg.change_command:
-            if 'red' in task_description:
-                task_description = task_description.replace('red', 'orange')
-        print(f"Running Task Description: {task_description}")
-        
-        # set_seed_everywhere(cfg.seed)
-        # remove saved images
-        # shutil.rmtree("./images/", ignore_errors=True)
-        traj, info = eval_fn(cfg = cfg,  
-                            policy = policy, 
-                            env = env, 
-                            variation_id = variation_id, 
-                            max_T = TASK_MAX_STEPS[cfg.task_suite_name], 
-                            resize_size = resize_size, 
-                            task_description= task_description,
-                            task_name = env_name,
-                            change_spawn_regions=cfg.change_spawn_regions)
-    
-        
-        print("Evaluated traj #{}, task#{}, reached? {} picked? {} success? {} ".format(ctr, variation_id, info['reached'], info['picked'], info['success']))
-        success_cnt += info['success']
-        reached_cnt += info['reached']
-        picked_cnt += info['picked']
-        
-        traj._data[0][0]['task_description'] = task_description
-        
-        if cfg.save:
-            pkl.dump(traj, open(os.path.join(save_path, f"traj_{ctr}.pkl"), "wb"))
-        
-        # Save info
-        with open(os.path.join(save_path, f"info_{ctr}.json"), "w") as f:
-            json.dump(info, f, indent=4)
         
         print(f"Reached rate: {reached_cnt / (ctr + 1):.2f}")
         print(f"Picked rate: {picked_cnt / (ctr + 1):.2f}")
         print(f"Success rate: {success_cnt / (ctr + 1):.2f}")
-        
-
-    
-    print(f"Reached rate: {reached_cnt / ctr:.2f}")
-    print(f"Picked rate: {picked_cnt / ctr:.2f}")
-    print(f"Success rate: {success_cnt / ctr:.2f}")
+        with open(f"{save_path}/log.txt", "a") as f:
+            f.write(f"Checkpoint: {checkpoint_path}, \
+                        Reached rate: {reached_cnt / (ctr + 1):.2f}, \
+                        Picked rate: {picked_cnt / (ctr + 1):.2f}, \
+                        Success rate: {success_cnt / (ctr + 1):.2f}\n")    
     
 
 
