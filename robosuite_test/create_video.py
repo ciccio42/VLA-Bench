@@ -7,9 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 import imageio
 import debugpy
 import sys
-sys.path.append('../.')
-sys.path.append("/home/rsofnc000/Multi-Task-LFD-Framework/repo/TinyVLA")
-sys.path.append("/home/rsofnc000/Multi-Task-LFD-Framework/repo/TinyVLA/test/robosuite_test/robosuite")
+
 
 if __name__ == '__main__':
 
@@ -26,6 +24,7 @@ if __name__ == '__main__':
         
 
     pkl_files = glob.glob(f"{args.path_to_pkl}/*.pkl")
+    pkl_files.sort(key=lambda x: int(os.path.basename(x).split('_')[1].split('.')[0]))
     os.makedirs(args.output_dir, exist_ok=True)
 
     for pkl_file in pkl_files:

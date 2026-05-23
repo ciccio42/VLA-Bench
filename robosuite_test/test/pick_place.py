@@ -92,7 +92,7 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
     os.makedirs("images", exist_ok=True)
     
     previous_action = np.zeros((7,), dtype=np.float32)
-    
+
     while not done:
 
         tasks['reached'] = int(check_reach(threshold=0.04,
@@ -136,7 +136,7 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                                 task_name = task_name,
                                 n_steps = n_steps)
 
-        for action_world in action_world_chunk:
+        for indx, action_world in enumerate(action_world_chunk):
             # print(f"\n---- Predicted gripper {action_world[6]} ----")
             if not gripper_closed and round(action_world[6], 2) > 0.9:
                 # action_world[2] = action[2] - 0.05
@@ -145,7 +145,7 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                 action_world[6] = -1.0
             elif gripper_closed and round(action_world[6], 2) < 0.7:
                 action_world[6] = -1.0
-            elif gripper_closed and round(action_world[6], 2) > 0.7:
+            elif gripper_closed and round(action_world[6], 2) >= 0.7:
                 action_world[6] = 1.0
 
             # avoid too strong gripper orientation changes
@@ -224,7 +224,8 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
             image.paste(gripper_img, (0, 0))
             image.paste(image_step, (gripper_img.width, 0))
             # save the combined image
-            # image.save(f"images/step_{n_steps}.jpg")
+            image.save(f"images/step_{n_steps}.jpg")
+            image.save("step.jpg")
             
             # current_step = obs['camera_front_image']
             # img = Image.fromarray(current_step)

@@ -11,7 +11,9 @@ import subprocess
 import yaml
 import os
 
-HOST_NAME = "gnode02"
+HOST_NAME = "gnode09"
+PATH_TO_BIN = "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/Video-Captioning/cosmos-reason2/.venv/bin/cosmos-reason2-inference"
+    
 
 def is_vllm_server_up(
     host: str,
@@ -99,19 +101,26 @@ def run_vllm_server(
     print(f"Original Size: ({img_w}, {img_h}), Padded Size: ({padded_video.shape[3]}, {padded_video.shape[2]})")
 
     # Save padded video as temp file
+    os.makedirs("temp_videos", exist_ok=True)
     temp_video_path = f"temp_padded_video_{task_name}_{traj_name}.mp4"
-    torchvision.io.write_video(temp_video_path, padded_video.permute(0, 2, 3, 1), fps=30)
+    out_tmp_video_path = os.path.join("temp_videos", temp_video_path)
+    torchvision.io.write_video(out_tmp_video_path, padded_video.permute(0, 2, 3, 1), fps=30)
     
     # Prepare command
     cmd = [
-        "cosmos-reason2-inference", "online",
+        PATH_TO_BIN,
+        "online",
         "--host", host,
         "--port", str(port),
         "-i", prompt_yaml,
-        "--reasoning",
-        "--videos", temp_video_path,
-        "--fps", "4"
+        "--no-reasoning",
+        "--videos", out_tmp_video_path,
+        "--fps", "4",
+        "--max-tokens", "64",
+        "--temperature", "0.2"
     ]
+    
+    print(f"Running vLLM mockup command: {' '.join(cmd)}")
     process = subprocess.run(cmd, capture_output=True, text=True)
     
     # Print stdout/stderr
@@ -137,46 +146,56 @@ def run_vllm_server(
                 task_description = task_description.replace("3", "third")
             if "4" in task_description:
                 task_description = task_description.replace("4", "fourth")
+            if 'four' in task_description and 'fourth' not in task_description:
+                task_description = task_description.replace('four', 'fourth')
+            if 'three' in task_description:
+                task_description = task_description.replace('three', 'third')
+            if 'compartment box' in task_description:
+                task_description = task_description.replace('compartment box', 'box')
             break
-
+        
+    task_description = task_description.replace('.', '')
     print(f"Generated Task Description: {task_description}")
     return task_description
 
 
 
-def run_vllm_mockup():
-    host = "gnode09"
-    port = 8000
+# def run_vllm_mockup():
+#     host = "gnode09"
+#     port = 8000
 
-    # IMPORTANT: must be server-local path
-    video_path = "sample.mp4"   # relative to allowed-local-media-path
-    prompt_yaml = "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/Video-Captioning/cosmos-reason2/prompts/caption.yaml"
+#     # IMPORTANT: must be server-local path
+#     video_path = "sample.mp4"   # relative to allowed-local-media-path
+#     prompt_yaml = "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/Video-Captioning/cosmos-reason2/prompts/caption.yaml"
 
-    # Prepare command
-    # cosmos-reason2-inference online \
-    # --port 8000 \
-    # -i $PROMPT_PATH \
-    # --reasoning \
-    # --videos $VIDEO_PATH \
-    # --fps 4
-    cmd = [
-        "cosmos-reason2-inference", "online",
-        "--host", host,
-        "--port", str(port),
-        "-i", prompt_yaml,
-        "--reasoning",
-        "--videos", video_path,
-        "--fps", "4"
-    ]
+#     # Prepare command
+#     # cosmos-reason2-inference online \
+#     # --port 8000 \
+#     # -i $PROMPT_PATH \
+#     # --reasoning \
+#     # --videos $VIDEO_PATH \
+#     # --fps 4
+#     #"--reasoning",
+#     cmd = [
+#         "cosmos-reason2-inference", "online",
+#         "--host", host,
+#         "--port", str(port),
+#         "-i", prompt_yaml,
+#         "--no-reasoning",
+#         "--videos", video_path,
+#         "--fps", "4",
+#         "--max-tokens", "64",
+#         "--temperature", "0.0"
+#     ]
     
-    print(f"Running vLLM mockup command: {' '.join(cmd)}")
-    process = subprocess.run(cmd, capture_output=True, text=True)
+#     print(f"Running vLLM mockup command: {' '.join(cmd)}")
+#     process = subprocess.run(cmd, capture_output=True, text=True)
 
-    # Print stdout/stderr
-    print("=== STDOUT ===")
-    print(process.stdout)
-    print("=== STDERR ===")
-    print(process.stderr)
+#     # Print stdout/stderr
+#     print("=== STDOUT ===")
+#     print(process.stdout)
+#     print("=== STDERR ===")
+#     print(process.stderr)
 
-    if process.returncode != 0:
-        raise RuntimeError(f"Cosmos inference failed with code {process.returncode}")
+#     if process.returncode != 0:
+#         raise RuntimeError(f"Cosmos inference failed with code {process.returncode}")

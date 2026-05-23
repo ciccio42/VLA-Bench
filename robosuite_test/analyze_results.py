@@ -6,6 +6,34 @@ import numpy as np
 
 BLACK_LIST = [] #[0,5,10,15]
 OBJ_3_COLOR_LIST = ["green", "orange", "red", "grey"]
+VARIATION_OBJ_COLOR= {
+    "pick_place":{
+        0: "green",
+        1: "green", 
+        2: "green",
+        3: "green",
+        4: "yellow",
+        5: "yellow",
+        6: "yellow",
+        7: "yellow",
+        8: "blue",
+        9: "blue",
+        10: "blue",
+        11: "blue",
+        12: "red",
+        13: "red",
+        14: "red",
+        15: "red"
+    }
+}
+BIN_NUMBER_DESCRIPTION= {
+    "pick_place":{
+        0: "first",
+        1: "second", 
+        2: "third",
+        3: "fourth"
+    }
+}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze results from robosuite experiments.")
@@ -13,18 +41,25 @@ if __name__ == "__main__":
     parser.add_argument("--task_name", type=str, default="pick_place", help="Name of the task to analyze.")
     parser.add_argument("--change_obj_pos", type=str, default="False", help="Whether to change object positions.")
     parser.add_argument("--ood", type=str, default="False", help="Whether to change object positions.")
+    parser.add_argument("--otd", type=str, default="False", help="Whether to change object positions.")
     parser.add_argument("--change_command", type=str, default="False", help="Whether to change object positions.")
     parser.add_argument("--obj_set", type=str, default="-1", help="Object set identifier.")
+    parser.add_argument("--vllm", action='store_true', help="Whether to use vllm.")
     
     args = parser.parse_args()
-    print(f"rollout_{args.task_name}_*_{args.change_obj_pos}_obj_set_{args.obj_set}_change_command_{args.change_command}_*_OoD_{args.ood}")
-    result_folders = glob.glob(os.path.join(args.path, f"rollout_{args.task_name}_*_{args.change_obj_pos}_obj_set_{args.obj_set}_change_command_{args.change_command}_OoD_{args.ood}"))
-
+    if not args.vllm:
+        print(f"rollout_{args.task_name}_*_{args.change_obj_pos}_obj_set_{args.obj_set}_change_command_{args.change_command}_*_otd_{args.otd}")
+        result_folders = glob.glob(os.path.join(args.path, f"rollout_{args.task_name}_*_{args.change_obj_pos}_obj_set_{args.obj_set}_change_command_{args.change_command}_*_otd_{args.otd}"))
+    else:
+        print(f"rollout_{args.task_name}_*_{args.change_obj_pos}_obj_set_{args.obj_set}_change_command_{args.change_command}_use_vllm_True_*_otd_{args.otd}")
+        result_folders = glob.glob(os.path.join(args.path, f"rollout_{args.task_name}_*_{args.change_obj_pos}_obj_set_{args.obj_set}_change_command_{args.change_command}_use_vllm_True_otd_{args.otd}"))
+        
     if not result_folders:
-        print("No result folders found in the specified path.")
+        print(f"No result folders found in the specified path")
         exit(1)
 
     result = dict()
+    task_description_gt_bin_records = []
     for folder in result_folders:
         run_number = folder.split(f'rollout_{args.task_name}_')[-1].split('_')[0]
         print(f"Processing folder: {folder} (Run {run_number})")
@@ -60,24 +95,61 @@ if __name__ == "__main__":
                           
                 for metric in data.keys():                  
                     # print(f"{color}-{metric}")
-                    value = data[metric]
-                    result[run_number][metric].append(value)
-                    if args.obj_set != "-1":
-                        result[run_number][color][metric].append(value)
-
+                    if 'task_description' not in metric:
+                        value = data[metric]
+                        result[run_number][metric].append(value)
+                        if args.obj_set != "-1":
+                            result[run_number][color][metric].append(value)
+                    elif 'task_description' in metric and args.vllm:
+                        if 'color_accuracy' not in result[run_number].keys():
+                            result[run_number]['color_accuracy'] = []
+                        if 'bin_accuracy' not in result[run_number].keys():
+                            result[run_number]['bin_accuracy'] = []
+                        
+                        # check if generated task description matches ground truth
+                        task_variation_id = int(data['variation_id'])
+                        gt_color_obj = VARIATION_OBJ_COLOR[args.task_name][task_variation_id]
+                        if gt_color_obj in data[metric]:
+                            result[run_number]['color_accuracy'].append(1)
+                        else:
+                            result[run_number]['color_accuracy'].append(0)
+                        
+                        # check bin number
+                        gt_bin_num = task_variation_id % 4
+                        gt_bin_description = BIN_NUMBER_DESCRIPTION[args.task_name][gt_bin_num]
+                        is_bin_correct = gt_bin_description in data['task_description']
+                        if not is_bin_correct:
+                            task_description_gt_bin_records.append(
+                                {
+                                    "run_number": run_number,
+                                    "file_name": os.path.basename(file_path),
+                                    "variation_id": task_variation_id,
+                                    "predicted_task_description": data["task_description"],
+                                    "gt_bin_num": gt_bin_num,
+                                    "gt_bin_description": gt_bin_description,
+                                }
+                            )
+                        if is_bin_correct:
+                            result[run_number]['bin_accuracy'].append(1)
+                        else:
+                            result[run_number]['bin_accuracy'].append(0)
+                        
+                        
     # Average the results for each run
     aggregated_results = dict()
     for run in result.keys():
-        # print(f"Run: {run}")
+        print(f"Run: {run}")
         for metric_color in result[run].keys():
-            # print(f"\tMetric-color: {metric_color}")
-            if isinstance(result[run][metric_color], list):
-                # print(f"\t\tMetric: {metric_color}")    
-                # metric_color is metric
-                values = result[run][metric_color]
-                if metric_color not in aggregated_results:
-                    aggregated_results[metric_color] = []
-                aggregated_results[metric_color].append(np.mean(values))    
+            if 'task_description' not in metric_color:
+                # print(f"\tMetric-color: {metric_color}")
+                if isinstance(result[run][metric_color], list):
+                    # print(f"\t\tMetric: {metric_color}")    
+                    # metric_color is metric
+                    values = result[run][metric_color]
+                    if metric_color not in aggregated_results:
+                        aggregated_results[metric_color] = []
+                    aggregated_results[metric_color].append(np.mean(values)) 
+             
             elif isinstance(result[run][metric_color], dict):
                 # metric_color is color
                 # print(f"\t\tColor: {metric_color}")    
@@ -110,7 +182,14 @@ if __name__ == "__main__":
     # for metric, (mean, std) in final_results.items():
     #     print(f"{metric}: Mean = {mean:.4f}, Std = {std:.4f}")
     # Save final results to a JSON file
-    output_file = os.path.join(args.path, f"final_results_{args.task_name}_{args.change_obj_pos}_OoD_{args.ood}_obj_set_{args.obj_set}.json")
+    output_file = os.path.join(args.path, f"final_results_{args.task_name}_{args.change_obj_pos}_OoD_{args.ood}_obj_set_{args.obj_set}_vllm_{args.vllm}_otd_{args.otd}.json")
     with open(output_file, 'w') as f:
         json.dump(final_results, f, indent=4)    
+
+    details_output_file = os.path.join(
+        args.path,
+        f"task_description_vs_gt_bin_{args.task_name}_{args.change_obj_pos}_OoD_{args.ood}_obj_set_{args.obj_set}_vllm_{args.vllm}_otd_{args.otd}.json",
+    )
+    with open(details_output_file, "w") as f:
+        json.dump(task_description_gt_bin_records, f, indent=4)
             

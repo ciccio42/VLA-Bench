@@ -30,6 +30,8 @@ def eval_robosuite(cfg: EvalConfig) -> float:
     
     print("### Evaluating model ###")
     print(f"{cfg}")
+    use_vllm = bool(getattr(cfg.model_config, "use_cosmos_name", False))
+    otd = bool(getattr(cfg.model_config, "otd", False))
     
     # Set random seed
     # if 'rm_12_13_14_15' in cfg.task_suite_name:
@@ -45,8 +47,8 @@ def eval_robosuite(cfg: EvalConfig) -> float:
     run_episode_fn = None
     if cfg.model_family.lower() == "openvla":
         from robosuite_test.models.openvla import open_vla_policy
-        from robosuite_test.vllm_utils import is_vllm_server_up, run_vllm_server, run_vllm_mockup, HOST_NAME
-        if cfg.model_config.use_cosmos_name:
+        from robosuite_test.vllm_utils import is_vllm_server_up, run_vllm_server, HOST_NAME
+        if use_vllm:
             print(f"Using Cosmos model name: {cfg.model_config.model_cosmos_name}")
             ok, msg = is_vllm_server_up(HOST_NAME, cfg.model_config.model_cosmos_port)
             print(ok, msg)
@@ -61,6 +63,9 @@ def eval_robosuite(cfg: EvalConfig) -> float:
     elif cfg.model_family.lower() == "tinyvla":
         from robosuite_test.models.tinyvla import llava_pythia_act_policy
         print(f"Running TinyVLA evaluation....")
+        # TinyVLA post-processing may need suite semantics (e.g., abs_pose vs delta).
+        # Keep this on model_config for backward compatibility with existing model code.
+        setattr(cfg.model_config, "task_suite_name", cfg.task_suite_name)
         policy = llava_pythia_act_policy(cfg.model_config)
         #run_tinyvla_eval(cfg)
     
@@ -75,18 +80,23 @@ def eval_robosuite(cfg: EvalConfig) -> float:
         lines = f.readlines()
         seeds = [int(line.strip()) for line in lines]
     
-    test_variations = TASK_VARIATION_DICT[cfg.task_suite_name]
+    if otd and (cfg.task_suite_name == "ur5e_pick_place_delta_removed_0_5_10_15" or cfg.task_suite_name == "ur5e_pick_place_rm_12_13_14_15"):
+        test_variations = TASK_VARIATION_DICT[cfg.task_suite_name]['otd']
+    elif not otd and (cfg.task_suite_name == "ur5e_pick_place_delta_removed_0_5_10_15" or cfg.task_suite_name == "ur5e_pick_place_rm_12_13_14_15"):
+        test_variations = TASK_VARIATION_DICT[cfg.task_suite_name]['td']       
+    else:
+        test_variations = TASK_VARIATION_DICT[cfg.task_suite_name] 
     
     for ctr in range(cfg.num_trials_per_task*len(test_variations)):
         variation_id = test_variations[ctr % len(test_variations)]
-        env_seed = seeds[ctr % len(seeds)]
+        env_seed = seeds[ctr % len(seeds)]+(10000*cfg.run_number)
         gpu_id = 0
         
         if 'pick_place' in cfg.task_suite_name:
             env_name = 'pick_place'
             
         # save trajectory and info
-        save_path = os.path.join(cfg.model_config.model_path, f"rollout_{env_name}_{cfg.run_number}_{cfg.change_spawn_regions}_obj_set_{cfg.object_set}_change_command_{cfg.change_command}_use_vllm_{cfg.model_config.use_cosmos_name}")#_task_list_{test_variations}")
+        save_path = os.path.join(cfg.model_config.model_path, f"rollout_{env_name}_{cfg.run_number}_{cfg.change_spawn_regions}_obj_set_{cfg.object_set}_change_command_{cfg.change_command}_use_vllm_{use_vllm}_otd_{otd}")#_task_list_{test_variations}")
         os.makedirs(save_path, exist_ok=True)
         print(f"Saving rollout to: {save_path}")
         if os.path.exists(os.path.join(save_path, f"info_{ctr}.json")):
@@ -109,6 +119,7 @@ def eval_robosuite(cfg: EvalConfig) -> float:
                         seed=env_seed,
                         gpu_id=gpu_id,
                         object_set=cfg.object_set)
+        
         eval_fn = get_eval_fn(env_name=env_name)
         
         if cfg.object_set == -1:
@@ -121,11 +132,12 @@ def eval_robosuite(cfg: EvalConfig) -> float:
             if 'red' in task_description:
                 task_description = task_description.replace('red', 'orange')
         print(f"Running Task Description: {task_description}")
-        
+        print(f"Starting evaluation for variation_id: {variation_id}, env_seed: {env_seed}")
         # set_seed_everywhere(cfg.seed)
         # remove saved images
         # shutil.rmtree("./images/", ignore_errors=True)
-        if cfg.model_config.use_cosmos_name:
+        if use_vllm:
+            task_description = None
             task_description = run_vllm_server(model_name=cfg.model_config.model_cosmos_name,
                                                 dataset_path=cfg.model_config.dataset_path,
                                                 env_name=env_name,
@@ -142,7 +154,7 @@ def eval_robosuite(cfg: EvalConfig) -> float:
                             task_description= task_description,
                             task_name = env_name,
                             change_spawn_regions=cfg.change_spawn_regions,
-                            use_vllm=cfg.model_config.use_cosmos_name,)
+                            use_vllm=use_vllm)
         
         info['task_description'] = task_description
         print("Evaluated traj #{}, task#{}, reached? {} picked? {} success? {} ".format(ctr, variation_id, info['reached'], info['picked'], info['success']))

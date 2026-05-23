@@ -253,16 +253,14 @@ class PickPlaceController:
 def get_expert_trajectory(env_type, controller_type, renderer=False, camera_obs=True, task=None, ret_env=False, seed=None, env_seed=None, gpu_id=0, render_camera="frontview", object_set=1, **kwargs):
     # assert 'gpu' in str(
     #     mujoco_py.cymj), 'Make sure to render with GPU to make eval faster'
-    # reassign the gpu id
-    visible_ids = os.environ['CUDA_VISIBLE_DEVICES'].split(',')
-    if gpu_id == 3:
-        gpu_id = 0
-    elif gpu_id == 0:
-        gpu_id = 3  # 1
-    elif gpu_id == 1:
-        gpu_id = 2
-    elif gpu_id == 2:
-        gpu_id = 1  # 3
+    # Keep render GPU id within visible devices. Do not remap 0->3 etc.
+    visible_ids = os.environ.get('CUDA_VISIBLE_DEVICES', '')
+    if visible_ids:
+        n_visible = len([x for x in visible_ids.split(',') if x.strip() != ''])
+        if n_visible > 0:
+            gpu_id = int(gpu_id) % n_visible
+    else:
+        gpu_id = max(0, int(gpu_id))
     print(f"GPU-ID {gpu_id}")
     seed = seed if seed is not None else random.getrandbits(32)
     env_seed = seed if env_seed is None else env_seed

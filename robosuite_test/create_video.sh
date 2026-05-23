@@ -12,7 +12,7 @@
 export MUJOCO_PY_MUJOCO_PATH="/home/rsofnc000/.mujoco/mujoco210"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/rsofnc000/.mujoco/mujoco210/bin
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/nvidia
-PKL_PATH=/home/rsofnc000/checkpoint_save_folder/tiny_vla/post_processed_tiny_vla_llava_pythia_lora_ur5e_pick_place_delta_removed_0_5_10_15_lora_r_128_processed/checkpoint-40000/rollout_pick_place_0_False_obj_set_-1_change_command_False
+PKL_PATH=/mnt/beegfs/frosa/checkpoint_save_folder/checkpoint_save_folder/open_vla/openvla-7b+ur5e_pick_place_delta_all+b8+lr-0.0005+lora-r32+dropout-0.0--image_aug--ur5e_pick_place_delta_all_parallel_dec--8_acts_chunk--continuous_acts--L1_regression--3rd_person_img-gripper_img-proprio--40000_chkpt/rollout_pick_place_0_False_obj_set_-1_change_command_False_use_vllm_True
 
 srun python create_video.py \
     --path_to_pkl $PKL_PATH \

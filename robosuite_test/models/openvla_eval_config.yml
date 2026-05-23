@@ -1,4 +1,4 @@
-task_suite_name: &tsn ur5e_pick_place_delta_all
+task_suite_name: &tsn ur5e_pick_place_rm_12_13_14_15
 model_family: "openvla"
 num_steps_wait: 10
 num_trials_per_task: 10
@@ -18,11 +18,12 @@ change_command: false
 OoD: false
 object_set: -1
 object_set: -1
-run_id_note: "ur5e_pick_place_delta_all_parallel_dec--8_acts_chunk--continuous_acts--L1_regression--3rd_person_img-gripper_img-proprio"
+run_id_note: "ur5e_pick_place_rm_12_13_14_15_parallel_dec--8_acts_chunk--continuous_acts--L1_regression--3rd_person_img-gripper_img-proprio"
 
 model_config:
   type: openvla
-  model_path: /mnt/beegfs/frosa/checkpoint_save_folder/checkpoint_save_folder/open_vla/openvla-7b+ur5e_pick_place_delta_all+b8+lr-0.0005+lora-r32+dropout-0.0--image_aug--ur5e_pick_place_delta_all_parallel_dec--8_acts_chunk--continuous_acts--L1_regression--3rd_person_img-gripper_img-proprio--40000_chkpt
+  model_path: /mnt/beegfs/frosa/checkpoint_save_folder/checkpoint_save_folder/open_vla/cuda-128/seed_42/openvla-7b+ur5e_pick_place_rm_12_13_14_15+b8+lr-0.0005+lora-r32+dropout-0.0--image_aug--ur5e_pick_place_rm_12_13_14_15_parallel_dec--8_acts_chunk--continuous_acts--L1_regression--3rd_person_img-gripper_img-proprio--90000_chkpt
+  otd: false
   use_l1_regression: true
   use_diffusion: false
   num_diffusion_steps: 50
@@ -37,5 +38,5 @@ model_config:
   proprio_dim: 8
   chunk_size: 8
   task_suite_name: *tsn
-  use_cosmos_name: true      
+  use_cosmos_name: false      
   model_cosmos_name: "nvidia/Cosmos-Reason2-8B" 

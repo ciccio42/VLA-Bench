@@ -36,9 +36,16 @@ TASK_VARIATION_DICT = {
     "ur5e_pick_place_abs_pose": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     "ur5e_pick_place_delta_all": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     "ur5e_pick_place_removed_spawn_regions": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-    "ur5e_pick_place_delta_removed_0_5_10_15": [1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14], #[1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14], #[0, 5, 10, 15],  # Variations for the pick and place task with delta removed variations
+    "ur5e_pick_place_delta_removed_0_5_10_15": {
+        "td": [1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14],
+        "otd": [0, 5, 10, 15]
+    },
     "ur5e_pick_place_rm_one_spawn": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],  # Variations for the pick and place task with one spawn region removed
-    "ur5e_pick_place_rm_12_13_14_15": [12, 13, 14, 15], #[12, 13, 14, 15],  # Variations for the pick and place task with 12, 13, 14, 15 spawn regions removed
+    "ur5e_pick_place_rm_12_13_14_15":  
+    {
+        "td": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        "otd": [12, 13, 14, 15],
+    },
     "ur5e_pick_place_rm_central_spawn": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  # Variations for the pick and place task with central spawn region removed
 }
 
@@ -46,7 +53,7 @@ TASK_VARIATION_DICT = {
 TASK_MAX_STEPS = {
     TaskSuite.PICK_PLACE: 200,
     TaskSuite.PICK_PLACE_ABS_POSE: 220, 
-    TaskSuite.PICK_PLACE_DELTA_ALL: 130,
+    TaskSuite.PICK_PLACE_DELTA_ALL: 220,
     TaskSuite.PICK_PLACE_DELTA_REMOVED_0_5_10_15: 130,
     TaskSuite.PICK_PLACE_REMOVED_SPAWN_REGIONS_DELTA_ALL: 130,
     TaskSuite.PICK_PLACE_RM_ONE_SPAWN: 130,

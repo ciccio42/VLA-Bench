@@ -820,7 +820,9 @@ def get_vla_action(
         # Generate action
         if action_head is None:
             # Standard VLA output (single-image inputs, discrete actions)
-            action, _ = vla.predict_action(**inputs, unnorm_key=cfg.unnorm_key, do_sample=False)
+            action, _ = vla.predict_action(**inputs, 
+                                           unnorm_key=cfg.unnorm_key, 
+                                           do_sample=False)
         else:
             # Custom action head for continuous actions
             action, _ = vla.predict_action(

@@ -18,6 +18,8 @@ import time
 from PIL import Image
 import random
 import copy
+from robot_utils import set_seed_everywhere
+
 
 # Append current directory so that interpreter can find experiments.robot
 sys.path.append("../../.")
@@ -127,9 +129,20 @@ class open_vla_policy:
         obs['camera_front_image'] = resized_image
         
         observation, img = self.prepare_observation(obs=obs, 
-                                                    resize_size=resize_size, gripper_closed=gripper_closed)
+                                                    resize_size=resize_size, 
+                                                    gripper_closed=gripper_closed)
         
         action = None
+        
+        # if n_steps == 0:
+        #     # perform warmup action (noisy open loop action)
+        #     # set_seed_everywhere(3)
+        #     for _ in range(10):
+        #         action = self.get_action(
+        #             obs = observation,
+        #             task_label = task_description,
+        #             )
+        
         
         action = self.get_action(
                     obs = observation,
@@ -196,6 +209,11 @@ class open_vla_policy:
             'EEF_pose': eef_pose,
             'gripper_closed':gripper_closed, 
         }
+        
+        pil_img = Image.fromarray(img)
+        pil_img.save("full_image.jpg")
+        pil_img = Image.fromarray(eye_in_hand)
+        pil_img.save("eye_in_hand.jpg")
         
         return observation, img
 

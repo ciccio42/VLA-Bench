@@ -10,7 +10,7 @@ use_wandb: false
 wandb_entity: "your-wandb-entity"
 wandb_project: "your-wandb-project"
 seed: 0
-controller_path: "/home/rsofnc000/Multi-Task-LFD-Framework/repo/TinyVLA/test/robosuite_test/tasks/multi_task_robosuite_env/controllers/config/osc_pose.json"
+controller_path: "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/VLA-Benchmark/robosuite_test/tasks/multi_task_robosuite_env/controllers/config/osc_pose.json"
 debug: false
 run_number: 0
 change_spawn_regions: false
@@ -21,9 +21,10 @@ run_id_note: *tsn
 
 model_config:
   type: tinyvla
-  model_path: '/home/rsofnc000/checkpoint_save_folder/tiny_vla/post_processed_tiny_vla_llava_pythia_lora_ur5e_pick_place_rm_12_13_14_15_lora_r_128_processed/checkpoint-40000'
-  model_base: "/home/rsofnc000/checkpoint_save_folder/tiny_vla/llava_pythia_ur5e_pick_place_rm_12_13_14_15_128/1.3B"
+  model_path: '/mnt/beegfs/frosa/checkpoint_save_folder/checkpoint_save_folder/tiny_vla/TEST_OK/post_processed_tiny_vla_llava_pythia_lora_ur5e_pick_place_delta_all_lora_r_128_processed/checkpoint-40000'
+  model_base: "/mnt/beegfs/frosa/checkpoint_save_folder/checkpoint_save_folder/tiny_vla/llava_pythia/1.3B"
   enable_lora: true
   conv_mode: 'pythia'
   action_head: 'droid_diffusion' 
   task_suite_name: *tsn
+  use_cosmos_name: false

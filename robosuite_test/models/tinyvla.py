@@ -369,6 +369,7 @@ class llava_pythia_act_policy:
         return pred_action
     
     def action_post_processing(self, obs, action_chunk=None, n_steps=-1):
+        task_suite_name = getattr(self.policy_config, "task_suite_name", "")
         post_processed_actions = []
         for action in action_chunk:
             action = action*SCALE_FACTOR
@@ -376,7 +377,7 @@ class llava_pythia_act_policy:
             
             # get current gripper position
             action_world = np.zeros(7)
-            if 'abs_pose' in self.policy_config.task_suite_name:
+            if 'abs_pose' in task_suite_name:
                 action_world[0:3] = action[0:3]
             else:
                 # Position action in world frame

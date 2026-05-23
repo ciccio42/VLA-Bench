@@ -16,9 +16,12 @@ pip install -r python_requirements/openvla_requiments.txt  # openvla-requirement
 pip install torch==2.2.0+cu118 torchvision==0.17.0+cu118 -f https://download.pytorch.org/whl/torch_stable.html
 pip install git+https://github.com/moojink/transformers-openvla-oft.git
 
+
 # Download anonymous robosuite repository https://anonymous.4open.science/r/robosuite-FBC9
-cd robosuite
-pip install -r requirements.txt
+# cd robosuite
+# pip install -r requirements.txt
+# from robosuite_test folder
+pip install robosuite/.
 cd ..
 source install.sh
 pip install 'Cython<3.0'
@@ -32,14 +35,15 @@ In `robosuite_test` folder:
 conda env create -f conda_environments/tinyvla_robosuite_1_0_1.yaml
 pip install -r python_requirements/tinyvla_requirements.txt
 # Install torch 
-pip install torch==2.7.0+cu128 torchvision==0.22.0+cu128 –index-url https://download.pytorch.org/whl/cu128
+pip install torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
 # Install utils
 pip install -e ../.
 
 # Download anonymous robosuite repository https://anonymous.4open.science/r/robosuite-FBC9
-cd robosuite
-pip install -r requirements.txt 
-cd ..
+# cd robosuite
+# pip install -r requirements.txt
+# from robosuite_test folder
+pip install robosuite/.
 source install.sh
 pip install 'Cython<3.0'
 ```
