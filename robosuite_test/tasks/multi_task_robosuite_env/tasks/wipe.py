@@ -3,7 +3,7 @@ import numpy as np
 
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
-multi_task_robosuite_env.arena import WipeArena
+from multi_task_robosuite_env.arena import WipeArena
 from robosuite.models.tasks import ManipulationTask
 import multiprocessing
 
@@ -224,7 +224,7 @@ class Wipe(SingleArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types="default",
+            base_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -638,7 +638,7 @@ class Wipe(SingleArmEnv):
         return np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias) > self.contact_threshold
 
 if __name__ == '__main__':
-    from robosuite.controllers import load_controller_config
+    from robosuite.controllers import load_composite_controller_config as load_controller_config
 
     controller = load_controller_config(default_controller="IK_POSE")
     env = Wipe(has_renderer=True, robots=['Sawyer'], controller_configs=controller, has_offscreen_renderer=False,

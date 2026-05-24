@@ -93,7 +93,7 @@ class PressButton(SingleArmEnv):
             robots,
             env_configuration="default",
             controller_configs=None,
-            mount_types="default",
+            base_types="default",
             gripper_types="default",
             robot_offset=None,
             initialization_noise="default",
@@ -174,7 +174,7 @@ class PressButton(SingleArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types=mount_types,
+            base_types=base_types,
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -615,7 +615,7 @@ class UR5eButton(PressButton):
 if __name__ == '__main__':
     from robosuite.environments.manipulation.pick_place import PickPlace
     import robosuite
-    from robosuite.controllers import load_controller_config
+    from robosuite.controllers import load_composite_controller_config as load_controller_config
     import debugpy
     import yaml
     import cv2
@@ -632,7 +632,7 @@ if __name__ == '__main__':
 
     env = UR5eButton(task_id=0,
                      has_renderer=False,
-                     mount_types=env_conf['mount_types'],
+                     base_types=env_conf['base_types'],
                      controller_configs=controller,
                      has_offscreen_renderer=True,
                      reward_shaping=False,

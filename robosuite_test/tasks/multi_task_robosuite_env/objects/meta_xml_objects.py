@@ -4,7 +4,6 @@ import copy
 from copy import deepcopy
 import xml.etree.ElementTree as ET
 
-import robosuite.utils.macros as macros
 from multi_task_robosuite_env.objects.mujoco_xml import MujocoXML
 from robosuite.utils.mjcf_utils import string_to_array, array_to_string, CustomMaterial, OBJECT_COLLISION_COLOR,\
                                        sort_elements, new_joint, add_prefix, add_material, find_elements

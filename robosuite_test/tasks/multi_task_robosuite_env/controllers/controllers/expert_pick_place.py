@@ -11,17 +11,29 @@ except:
     pass
 from pyquaternion import Quaternion
 import random
-from robosuite import load_controller_config
 from robosuite.utils.transform_utils import quat2axisangle
-from robosuite.utils import RandomizationError
-import torch
+try:
+    from robosuite.utils import RandomizationError
+except Exception:
+    try:
+        from robosuite.utils.errors import RandomizationError
+    except Exception:
+        class RandomizationError(Exception):
+            pass
 import os
 # import mujoco_py
 import robosuite.utils.transform_utils as T
-import multi_task_robosuite_env.utils as utils
 from multi_task_robosuite_env import get_env
+
+try:
+    # Prefer the robosuite-1.5 compatible wrapper if it is next to this file.
+    from custom_osc_pose_wrapper_rs15 import CustomOSCPoseWrapper
+except Exception:
+    try:
+        from custom_osc_pose_wrapper import CustomOSCPoseWrapper
+    except Exception:
+        CustomOSCPoseWrapper = None
 import cv2
-import copy
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 pick_place_logger = logging.getLogger(name="PickPlaceLogger")
@@ -33,11 +45,242 @@ object_to_id = {"greenbox": 0, "yellowbox": 1, "bluebox": 2, "redbox": 3}
 # pip uninstall mujoco_py; pip install mujoco_py
 
 
+
+
+def _canonical_quat_xyzw(quat, reference=None):
+    """Normalize xyzw quaternion and choose a stable sign.
+
+    If reference is provided, choose the equivalent sign closest to reference.
+    This prevents axis-angle / SLERP discontinuities that can flip the wrist.
+    """
+    quat = np.asarray(quat, dtype=np.float64).copy()
+    norm = np.linalg.norm(quat)
+    if norm < 1e-12:
+        quat = np.array([0.0, 0.0, 0.0, 1.0], dtype=np.float64)
+    else:
+        quat /= norm
+    if reference is not None:
+        ref = _canonical_quat_xyzw(reference)
+        if np.dot(quat, ref) < 0.0:
+            quat *= -1.0
+    elif quat[3] < 0.0:
+        quat *= -1.0
+    return quat
+
+
+def _canonical_pyquat(quat, reference=None):
+    q = np.array([quat.x, quat.y, quat.z, quat.w], dtype=np.float64)
+    q = _canonical_quat_xyzw(q, reference=reference)
+    return Quaternion(q[3], q[0], q[1], q[2])
+
 def _clip_delta(delta, max_step=0.015):
     norm_delta = np.linalg.norm(delta)
     if norm_delta < max_step:
         return delta
     return delta / norm_delta * max_step
+
+def _as_list(value):
+    if isinstance(value, (list, tuple)):
+        return list(value)
+    return [value]
+
+
+def _eef_site_id(env, arm="right"):
+    """Return an integer MuJoCo site id for the robot end-effector.
+
+    robosuite <=1.4 often exposed robot.eef_site_id as an int.
+    robosuite 1.5 may expose it as a dict, e.g. {"right": id}.
+    NumPy arrays such as sim.data.site_xmat require an integer index.
+    """
+    site_id = env.robots[0].eef_site_id
+
+    if isinstance(site_id, dict):
+        if arm in site_id:
+            site_id = site_id[arm]
+        else:
+            site_id = next(iter(site_id.values()))
+
+    return int(site_id)
+
+
+def _unwrap_env(env):
+    """Return the underlying robosuite env if a Wrapper is used."""
+    return getattr(env, "env", env)
+
+
+def _is_absolute_pose_wrapper(env):
+    return hasattr(env, "post_proc_obs") and hasattr(env, "action_repeat")
+
+
+def _ensure_absolute_pose_wrapper(env, ranges):
+    """
+    The expert policy emits absolute world target actions:
+      [target_x, target_y, target_z, target_axis_angle(3), gripper]
+    Native robosuite OSC_POSE consumes controller-space actions, so we keep
+    the old action contract by wrapping the env if get_env() did not already do it.
+    """
+    if _is_absolute_pose_wrapper(env):
+        return env
+    if CustomOSCPoseWrapper is None:
+        raise RuntimeError(
+            "CustomOSCPoseWrapper is required to keep the existing absolute-pose action interface, "
+            "but it could not be imported."
+        )
+    return CustomOSCPoseWrapper(env, ranges)
+
+
+def _split_step_result(step_result):
+    if len(step_result) == 4:
+        return step_result
+    if len(step_result) == 5:
+        obs, reward, terminated, truncated, info = step_result
+        return obs, reward, bool(terminated or truncated), info
+    raise ValueError(f"Unexpected env.step return length: {len(step_result)}")
+
+
+def _split_reset_result(reset_result):
+    if isinstance(reset_result, tuple) and len(reset_result) == 2:
+        return reset_result[0]
+    return reset_result
+
+
+def _get_flattened_sim_state(sim):
+    """
+    robosuite historically exposed sim.get_state().flatten().
+    Keep that path, with a MuJoCo-data fallback for newer simulators.
+    """
+    if hasattr(sim, "get_state"):
+        state = sim.get_state()
+        return state.flatten() if hasattr(state, "flatten") else np.array(state).ravel()
+
+    data = sim.data
+    chunks = [np.asarray(data.qpos).ravel(), np.asarray(data.qvel).ravel()]
+    if hasattr(data, "act") and data.act is not None:
+        chunks.append(np.asarray(data.act).ravel())
+    return np.concatenate(chunks)
+
+
+def _set_flattened_sim_state(sim, flat_state):
+    if hasattr(sim, "set_state_from_flattened"):
+        sim.set_state_from_flattened(flat_state)
+        return
+
+    # Fallback for newer MuJoCo-style bindings.
+    flat_state = np.asarray(flat_state)
+    nq = sim.model.nq
+    nv = sim.model.nv
+    sim.data.qpos[:] = flat_state[:nq]
+    sim.data.qvel[:] = flat_state[nq:nq + nv]
+    if hasattr(sim.data, "act") and sim.data.act is not None:
+        na = len(sim.data.act)
+        if flat_state.shape[0] >= nq + nv + na:
+            sim.data.act[:] = flat_state[nq + nv:nq + nv + na]
+
+
+def _forward_sim(sim):
+    if hasattr(sim, "forward"):
+        sim.forward()
+    elif hasattr(sim, "mj_forward"):
+        sim.mj_forward()
+
+
+def _load_controller_config(ctrl_config, robot_type="UR5e", arms=("right",)):
+    """
+    Accepts:
+      - a robosuite 1.5 composite dict,
+      - a robosuite <=1.4 part-controller dict,
+      - a part controller name such as OSC_POSE / IK_POSE,
+      - a composite controller name such as BASIC,
+      - a path to either a composite JSON or old part-controller JSON.
+    Returns a robosuite 1.5-compatible composite controller config whenever possible.
+    """
+    import importlib
+    import os
+
+    if isinstance(ctrl_config, dict):
+        # If it is already composite, keep it. If it is an old part config, refactor it.
+        if "body_parts" in ctrl_config:
+            return ctrl_config
+        if ctrl_config.get("type") in {"IK_POSE", "OSC_POSE", "OSC_POSITION", "JOINT_POSITION", "JOINT_VELOCITY", "JOINT_TORQUE"}:
+            try:
+                from robosuite.controllers.composite.composite_controller_factory import (
+                    refactor_composite_controller_config,
+                )
+                return refactor_composite_controller_config(
+                    ctrl_config,
+                    robot_type=robot_type,
+                    arms=list(arms),
+                )
+            except Exception:
+                return ctrl_config
+        return ctrl_config
+
+    controllers = importlib.import_module("robosuite.controllers")
+    load_composite = getattr(controllers, "load_composite_controller_config", None)
+    load_part = getattr(controllers, "load_part_controller_config", None)
+    load_legacy = getattr(controllers, "load_controller_config", None)
+
+    try:
+        from robosuite.controllers.composite.composite_controller_factory import (
+            refactor_composite_controller_config,
+        )
+    except Exception:
+        refactor_composite_controller_config = None
+
+    part_controller_names = {
+        "IK_POSE",
+        "OSC_POSE",
+        "OSC_POSITION",
+        "JOINT_POSITION",
+        "JOINT_VELOCITY",
+        "JOINT_TORQUE",
+    }
+
+    if isinstance(ctrl_config, str) and ctrl_config in part_controller_names:
+        if load_part is None:
+            if load_legacy is not None:
+                return load_legacy(default_controller=ctrl_config)
+            raise RuntimeError(f"No part controller loader found for {ctrl_config}")
+
+        part_config = load_part(default_controller=ctrl_config)
+        if refactor_composite_controller_config is not None:
+            return refactor_composite_controller_config(
+                part_config,
+                robot_type=robot_type,
+                arms=list(arms),
+            )
+        return part_config
+
+    if isinstance(ctrl_config, str) and os.path.isfile(ctrl_config):
+        if load_composite is not None:
+            try:
+                return load_composite(controller=ctrl_config)
+            except Exception:
+                pass
+
+        if load_part is not None:
+            part_config = load_part(custom_fpath=ctrl_config)
+            if refactor_composite_controller_config is not None:
+                return refactor_composite_controller_config(
+                    part_config,
+                    robot_type=robot_type,
+                    arms=list(arms),
+                )
+            return part_config
+
+        if load_legacy is not None:
+            return load_legacy(custom_fpath=ctrl_config)
+
+        raise RuntimeError(f"No controller loader found for file: {ctrl_config}")
+
+    # Composite controller default, e.g. BASIC.
+    if load_composite is not None:
+        return load_composite(controller=ctrl_config)
+
+    if load_legacy is not None:
+        return load_legacy(default_controller=ctrl_config)
+
+    raise RuntimeError(f"No controller loader found for controller: {ctrl_config}")
 
 
 class PickPlaceController:
@@ -48,17 +291,23 @@ class PickPlaceController:
         self.reset()
 
     def _calculate_quat(self, obs):
-        # Compute target quaternion that defines the final desired gripper orientation
-        # 1. Obtain the orientation of the object wrt to world
-        obj_quat = obs['{}_quat'.format(self._object_name)]
+        obj_quat = obs["{}_quat".format(self._object_name)]
+
+        if "UR5e" in self._env.robot_names:
+            # Keep Robotiq2f-85 orientation stable.
+            # This preserves the current downward grasp convention.
+            return self._base_quat
+
         if "nut" in self._object_name:
             obj_rot = T.quat2mat(obj_quat)
-            obj_rot = np.array([[-1.0, 0.0, 0.0],
-                                [0.0, -1.0, 0.0],
-                                [0.0, 0.0, 1.0]])@obj_rot
+            obj_rot = np.array(
+                [[-1.0, 0.0, 0.0],
+                [0.0, -1.0, 0.0],
+                [0.0, 0.0, 1.0]]
+            ) @ obj_rot
         else:
             obj_rot = T.quat2mat(obj_quat)
-        # 2. compute the new gripper orientation with respect to the gripper
+
         world_ee_rot = np.matmul(obj_rot, self._target_gripper_wrt_obj_rot)
         return Quaternion(matrix=world_ee_rot)
 
@@ -85,23 +334,31 @@ class PickPlaceController:
                 [[0, 1, 0.], [1, 0, 0.], [0., 0., -1.]])
             self._g_tol = 5e-2
         elif "UR5e" in self._env.robot_names:
-            self._obs_name = 'eef_pos'
+            self._obs_name = "eef_pos"
             self._default_speed = 0.02
             self._final_thresh = 6e-2
-            # define the target gripper orientation with respect to the object
-            self._target_gripper_wrt_obj_rot = np.array(
-                [[1, 0, 0.], [0, -1, 0.], [0., 0., -1.]])
             self._g_tol = 5e-2
+
+            # Robotiq2f-85 / UR5e: keep the initial gripper orientation as the
+            # default grasp orientation instead of forcing the legacy target matrix.
+            eef_site_id = _eef_site_id(self._env)
+            current_eef_rot = np.reshape(
+                self._env.sim.data.site_xmat[eef_site_id],
+                (3, 3),
+            )
+
+            # For boxes, this prevents the gripper from flipping upside down.
+            self._target_gripper_wrt_obj_rot = current_eef_rot.copy()
         else:
             raise NotImplementedError
 
         # define the initial orientation of the gripper site
         self._base_quat = Quaternion(matrix=np.reshape(
-            self._env.sim.data.site_xmat[self._env.robots[0].eef_site_id], (3, 3)))
+            self._env.sim.data.site_xmat[_eef_site_id(self._env)], (3, 3)))
         pick_place_logger.debug(
-            f"Starting position:\n{self._env.sim.data.site_xpos[self._env.robots[0].eef_site_id]}")
+            f"Starting position:\n{self._env.sim.data.site_xpos[_eef_site_id(self._env)]}")
         pick_place_logger.debug(
-            f"Base rot:\n{np.reshape(self._env.sim.data.site_xmat[self._env.robots[0].eef_site_id], (3,3))}")
+            f"Base rot:\n{np.reshape(self._env.sim.data.site_xmat[_eef_site_id(self._env)], (3,3))}")
 
         self._t = 0
         self._intermediate_reached = False
@@ -165,7 +422,8 @@ class PickPlaceController:
             max_step = self._default_speed
 
         delta_pos = _clip_delta(delta_pos, max_step)
-        quat = np.array([quat.x, quat.y, quat.z, quat.w])
+        quat = np.array([quat.x, quat.y, quat.z, quat.w], dtype=np.float64)
+        quat = _canonical_quat_xyzw(quat)
         aa = quat2axisangle(quat)
 
         # absolute in world frame
@@ -179,6 +437,12 @@ class PickPlaceController:
             self._start_grasp = -1
             self._finish_grasp = False
             self._target_quat = self._calculate_quat(obs)
+            # q and -q represent the same orientation. Align target sign with
+            # the starting gripper quaternion so SLERP follows the short path.
+            self._target_quat = _canonical_pyquat(
+                self._target_quat,
+                reference=np.array([self._base_quat.x, self._base_quat.y, self._base_quat.z, self._base_quat.w]),
+            )
             self._move_up = False
 
         # Phase 1
@@ -275,6 +539,21 @@ def get_expert_trajectory(env_type, controller_type, renderer=False, camera_obs=
     elif 'Panda' in env_type:
         action_ranges = np.array(
             [[-0.05, 0.25], [-0.45, 0.5], [0.82, 1.2], [0.85, 1.08], [-1, 1], [-1, 1], [-1, 1]])
+    if 'Sawyer' in env_type:
+        robot_type = "Sawyer"
+    elif 'Panda' in env_type:
+        robot_type = "Panda"
+    elif 'UR5e' in env_type:
+        robot_type = "UR5e"
+    else:
+        robot_type = "UR5e"
+
+    controller_type = _load_controller_config(
+        controller_type,
+        robot_type=robot_type,
+        arms=("right",),
+    )
+
     success, use_object = False, None
     if task is not None:
         assert 0 <= task <= 15, "task should be in [0, 15]"
@@ -296,6 +575,7 @@ def get_expert_trajectory(env_type, controller_type, renderer=False, camera_obs=
                               render_camera=render_camera,
                               object_set=object_set,
                               ** kwargs)
+                env = _ensure_absolute_pose_wrapper(env, action_ranges)
                 break
             except RandomizationError:
                 pass
@@ -316,35 +596,37 @@ def get_expert_trajectory(env_type, controller_type, renderer=False, camera_obs=
                           render_camera=render_camera,
                           object_set=object_set,
                           **kwargs)
+            env = _ensure_absolute_pose_wrapper(env, action_ranges)
             break
         except RandomizationError:
             pass
     while not success:
+        base_env = _unwrap_env(env)
         controller = PickPlaceController(
-            env.env, tries=tries, ranges=action_ranges, object_set=object_set)
+            base_env, tries=tries, ranges=action_ranges, object_set=object_set)
         np.random.seed(seed + int(tries) + seed_offset)
         while True:
             try:
-                obs = env.reset()
+                obs = _split_reset_result(env.reset())
                 break
             except RandomizationError:
                 pass
-        mj_state = env.sim.get_state().flatten()
+        mj_state = _get_flattened_sim_state(env.sim)
         sim_xml = env.model.get_xml()
         traj = Trajectory(sim_xml)
 
         env.reset_from_xml_string(sim_xml)
         env.sim.reset()
-        env.sim.set_state_from_flattened(mj_state)
-        env.sim.forward()
-        use_object = env.object_id
+        _set_flattened_sim_state(env.sim, mj_state)
+        _forward_sim(env.sim)
+        use_object = base_env.object_id
         traj.append(obs, raw_state=mj_state, info={'status': 'start'})
         print(f"Target object {controller._object_name}")
-        for t in range(int(env.horizon/env.action_repeat)):
+        for t in range(int(base_env.horizon / env.action_repeat)):
             # compute the action for the current state
             action, status = controller.act(obs)
 
-            obs, reward, done, info = env.step(action)
+            obs, reward, done, info = _split_step_result(env.step(action))
 
             cv2.imwrite(f"debug.png", obs['camera_front_image'][:, :, ::-1])
             try:
@@ -365,7 +647,7 @@ def get_expert_trajectory(env_type, controller_type, renderer=False, camera_obs=
             if renderer:
                 env.render()
 
-            mj_state = env.sim.get_state().flatten()
+            mj_state = _get_flattened_sim_state(env.sim)
             traj.append(obs, reward, done, info, action, mj_state)
             # # plot bb
             # target_obj_id = obs['target-object']
@@ -409,8 +691,11 @@ if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))
     controller_config_path = os.path.join(
         current_dir, "../config/osc_pose.json")
-    controller_config = load_controller_config(
-        custom_fpath=controller_config_path)
+    controller_config = _load_controller_config(
+        controller_config_path,
+        robot_type="UR5e",
+        arms=("right",),
+    )
 
     for i in range(0, 16):
         traj = get_expert_trajectory('UR5e_PickPlaceDistractor',

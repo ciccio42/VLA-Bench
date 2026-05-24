@@ -38,7 +38,7 @@ class PickPlace(SingleArmEnv):
                  num_objects=4,
                  env_configuration="default",
                  controller_configs=None,
-                 mount_types="default",
+                base_types="default",
                  gripper_types="default",
                  robot_offset=None,
                  initialization_noise="default",
@@ -131,7 +131,7 @@ class PickPlace(SingleArmEnv):
                          'can': [0.045, 0.065, 0.045]}
 
         super().__init__(robots=robots,
-                         mount_types=mount_types,
+                         base_types=base_types,
                          gripper_types=gripper_types,
                          initialization_noise=None,
                          camera_names=camera_names,
@@ -678,10 +678,10 @@ class PandaPickPlaceDistractor(PickPlace):
 
 
 if __name__ == '__main__':
-    from robosuite.controllers import load_controller_config
+    from robosuite.controllers import load_composite_controller_config as load_controller_config
     from robosuite.environments.manipulation.pick_place import PickPlace
     import robosuite
-    from robosuite.controllers import load_controller_config
+    from robosuite.controllers import load_composite_controller_config as load_controller_config
     import debugpy
     import yaml
     import cv2
@@ -709,7 +709,7 @@ if __name__ == '__main__':
                                   camera_attribs=env_conf['camera_attribs'],
                                   camera_gripper=env_conf['camera_gripper'],
                                   robot_offset=env_conf['robot_offset'],
-                                  mount_types=env_conf['mount_types'],
+                                 base_types=env_conf['base_types'],
                                   env_conf=env_conf)
     obs = env.reset()
     cv2.imwrite(

@@ -4,7 +4,7 @@ import numpy as np
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import TableArena
-multi_task_robosuite_env.objects.custom_xml_objects import DoorObject, DoorObject2, SmallDoorObject, SmallDoorObject2
+from multi_task_robosuite_env.objects.custom_xml_objects import DoorObject, DoorObject2, SmallDoorObject, SmallDoorObject2
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import UniformRandomSampler, SequentialCompositeSampler
 
@@ -135,7 +135,7 @@ class DoorEnv(SingleArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types="default",
+            base_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -422,7 +422,7 @@ class SawyerDoor(DoorEnv):
         super().__init__(robots=['Sawyer'], task_id=task_id, **kwargs)
 
 if __name__ == '__main__':
-    from robosuite.controllers import load_controller_config
+    from robosuite.controllers import load_composite_controller_config as load_controller_config
 
     controller = load_controller_config(default_controller="IK_POSE")
     env = SawyerDoor(has_renderer=True, controller_configs=controller, has_offscreen_renderer=False,

@@ -19,9 +19,13 @@ def _compress_obs(obs):
                 assert okay, "image encoding failed!"
                 obs[key] = im_string
         if 'depth_norm' in key:
-            assert len(
-                obs[key].shape) == 2 and obs[key].dtype == np.uint8, "assumes uint8 greyscale depth image!"
-            depth_im = np.tile(obs[key][:, :, None], (1, 1, 3))
+            depth_im = obs[key]
+            assert depth_im.dtype == np.uint8, "assumes uint8 greyscale depth image!"
+            if len(depth_im.shape) == 3:
+                assert depth_im.shape[2] == 1, "assumes depth_norm is either 2D or has a singleton channel dimension!"
+                depth_im = depth_im[:, :, 0]
+            assert len(depth_im.shape) == 2, "assumes depth_norm is either 2D or has a singleton channel dimension!"
+            depth_im = np.tile(depth_im[:, :, None], (1, 1, 3))
             okay, depth_string = cv2.imencode('.jpg', depth_im)
             assert okay, "depth encoding failed!"
             obs[key] = depth_string

@@ -1,3 +1,33 @@
+## Robosuite 1.5 Migration
+
+This update keeps the custom task package in `tasks/multi_task_robosuite_env` and moves the simulator stack to robosuite 1.5.
+
+For the full update commands, see [update_robosuite.md](../update_robosuite.md).
+
+```bash
+conda create -n multi_task_robosuite_1_5 python=3.10 -y
+conda activate multi_task_robosuite_1_5
+
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install "mujoco"
+python -m pip install "robosuite"
+
+# Keep the local task package, controllers, and utils editable
+cd /mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/VLA-Benchmark/robosuite_test
+python -m pip install -e ./tasks
+python -m pip install -e .
+
+# Test 
+
+```
+
+Install the project-specific dependencies after:
+
+```bash
+python -m pip install -r python_requirements/openvla_requiments.txt
+python -m pip install -r python_requirements/tinyvla_requirements.txt
+```
+
 Usefull [link](https://docs.pytorch.org/rl/main/reference/generated/knowledge_base/MUJOCO_INSTALLATION.html)
 
 # Robosuite for OpenVLA Installation

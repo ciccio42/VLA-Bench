@@ -84,7 +84,7 @@ def get_env(env_name, ranges, **kwargs):
     except:
         pass
     env = env(
-        mount_types=env_conf['mount_types'],
+        base_types=env_conf['base_types'],
         gripper_types=env_conf['gripper_types'],
         table_full_size=env_conf['table_full_size'],
         table_offset=env_conf['table_offset'],

@@ -9,7 +9,7 @@ import pybullet as p
 from pyquaternion import Quaternion
 import random
 from multi_task_robosuite_env.custom_ik_wrapper import normalize_action
-from robosuite import load_controller_config
+from robosuite.controllers import load_composite_controller_config as load_controller_config
 from robosuite.utils.transform_utils import quat2axisangle
 from robosuite.utils import RandomizationError
 import torch

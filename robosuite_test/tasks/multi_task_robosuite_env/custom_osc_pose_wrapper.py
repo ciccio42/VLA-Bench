@@ -9,6 +9,44 @@ import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 osc_pose_logger = logging.getLogger(name="OSCPOSELogger")
 
+def _as_list(value):
+    """Return value as a list, preserving existing lists / tuples."""
+    if isinstance(value, (list, tuple)):
+        return list(value)
+    return [value]
+
+
+def _first(value):
+    """Return first element for robosuite args that may be scalar or list."""
+    return _as_list(value)[0]
+
+
+def _camera_depth_enabled(camera_depths, index=0):
+    if isinstance(camera_depths, (list, tuple)):
+        return bool(camera_depths[index])
+    return bool(camera_depths)
+
+
+def _eef_site_id(env, arm="right"):
+    """robosuite <=1.4 used an int; robosuite >=1.5 may use a per-arm dict."""
+    site_id = env.robots[0].eef_site_id
+    if isinstance(site_id, dict):
+        if arm in site_id:
+            return site_id[arm]
+        return next(iter(site_id.values()))
+    return site_id
+
+
+def _split_step_result(step_result):
+    """Support both robosuite's 4-tuple and Gymnasium-style 5-tuple."""
+    if len(step_result) == 4:
+        return step_result
+    if len(step_result) == 5:
+        obs, reward, terminated, truncated, info = step_result
+        return obs, reward, bool(terminated or truncated), info
+    raise ValueError(f"Unexpected env.step return length: {len(step_result)}")
+
+
 
 class CustomOSCPoseWrapper(Wrapper):
     def __init__(self, env, ranges):
@@ -73,7 +111,7 @@ class CustomOSCPoseWrapper(Wrapper):
                 else:
                     new_obs[k] = obs[k]
 
-        frame_height, frame_width = self.env.camera_heights[0], self.env.camera_widths[0]
+        frame_height, frame_width = _first(self.env.camera_heights), _first(self.env.camera_widths)
         if self.env.use_camera_obs:
             for camera_name in self.env.camera_names:
                 # save image observation
@@ -86,7 +124,7 @@ class CustomOSCPoseWrapper(Wrapper):
                     obs[f"{camera_name}_image"].copy()[::-1,], new_dim)
                 # cv2.imwrite("post_flip_debug_img.png",
                 #             new_obs[f"{camera_name}_image"])
-                if self.env.camera_depths:
+                if _camera_depth_enabled(self.env.camera_depths):
                     new_obs[f"{camera_name}_depth_norm"] = np.array(
                         obs[f"{camera_name}_depth"].copy()[::-1]*255, dtype=np.uint8)
                     new_obs[f"{camera_name}_depth"] = self._get_real_depth(
@@ -105,41 +143,78 @@ class CustomOSCPoseWrapper(Wrapper):
             (obs[robot_name+'eef_pos'], aa)).astype(np.float32)
         return new_obs
 
+    @staticmethod
+    def _canonical_quat_xyzw(quat):
+        """Return a normalized xyzw quaternion with a stable sign convention."""
+        quat = np.asarray(quat, dtype=np.float64).copy()
+        norm = np.linalg.norm(quat)
+        if norm < 1e-12:
+            return np.array([0.0, 0.0, 0.0, 1.0], dtype=np.float64)
+        quat /= norm
+        # q and -q encode the same pose. Keeping w >= 0 prevents axis-angle
+        # discontinuities near pi that can make the wrist flip.
+        if quat[3] < 0.0:
+            quat *= -1.0
+        return quat
+
+    @staticmethod
+    def _quat_error_local_xyzw(current_quat, desired_quat):
+        """
+        Orientation error expected by robosuite OSC_POSE.
+
+        robosuite OSC_POSE position deltas are expressed in the MuJoCo world
+        frame, but orientation deltas are relative to the current end-effector
+        frame. Therefore, for an absolute desired world orientation q_des and
+        current world orientation q_cur, the action rotation is:
+
+            q_err = inverse(q_cur) * q_des
+
+        encoded as a scaled axis-angle vector.
+        """
+        q_cur = CustomOSCPoseWrapper._canonical_quat_xyzw(current_quat)
+        q_des = CustomOSCPoseWrapper._canonical_quat_xyzw(desired_quat)
+
+        # Use the equivalent desired quaternion closest to q_cur, so the
+        # relative rotation follows the shortest path.
+        if np.dot(q_cur, q_des) < 0.0:
+            q_des *= -1.0
+
+        q_err = T.quat_multiply(T.quat_inverse(q_cur), q_des)
+        q_err = CustomOSCPoseWrapper._canonical_quat_xyzw(q_err)
+        aa = T.quat2axisangle(q_err)
+
+        # Numerical safety: axis-angle has a singularity at pi. This keeps the
+        # command just below pi and avoids controller jumps.
+        angle = np.linalg.norm(aa)
+        if angle > np.pi:
+            aa = aa / angle * (angle - 2.0 * np.pi)
+        return aa
+
     def convert_rotation_gripper_to_world(self, action, base_pos, base_quat):
         """
-            Take the current delta defined with respect to the gripper frame and convert it with respect to the world frame
+        Convert the expert's absolute world target-pose action into robosuite's
+        OSC_POSE action convention.
 
-            Args:
-                action (): .
-                base_pos (): .  
-                base_quat (): . 
+        Input action convention preserved from the old code:
+            [target_x, target_y, target_z, abs_axis_angle_x, abs_axis_angle_y,
+             abs_axis_angle_z, gripper]
+
+        robosuite OSC_POSE convention:
+            [world_delta_x, world_delta_y, world_delta_z, local_delta_axis_angle_x,
+             local_delta_axis_angle_y, local_delta_axis_angle_z, gripper]
         """
+        action = np.asarray(action, dtype=np.float64)
+
         if action.shape[0] == 7:
-            # Create rotation matrix R^{world}_{new_ee}
-            R_w_new_ee = T.quat2mat(T.axisangle2quat(action[3:6]))
-            # Create rotation matrix R^{ee}_{world}
-            R_ee_world = T.matrix_inverse(T.quat2mat(base_quat))
-            # Compute the delta with rispect to the base frame
-            delta_world = R_w_new_ee @ R_ee_world
-            # osc_pose_logger.debug(f"Delta world {T.mat2euler(delta_world)}")
-            euler = -T.mat2euler(delta_world)
-            aa = T.quat2axisangle(T.mat2quat(T.euler2mat(euler)))
-            return np.concatenate((action[:3] - base_pos, aa, action[6:]))
-        else:
-            # retrieve command quaternion
-            cmd_quat = Quaternion(angle=action[3], axis=action[4:7])
-            cmd_quat = np.array(
-                [cmd_quat.x, cmd_quat.y, cmd_quat.z, cmd_quat.w])
-            # Create rotation matrix R^{world}_{new_ee}
-            R_w_new_ee = T.quat2mat(cmd_quat)
-            # Create rotation matrix R^{ee}_{world}
-            R_ee_world = T.matrix_inverse(T.quat2mat(base_quat))
-            # Compute the delta with rispect to the base frame
-            delta_world = R_w_new_ee @ R_ee_world
-            # osc_pose_logger.debug(f"Delta world {T.mat2euler(delta_world)}")
-            euler = -T.mat2euler(delta_world)
-            aa = T.quat2axisangle(T.mat2quat(T.euler2mat(euler)))
-            return np.concatenate((action[:3] - base_pos, aa, action[7:]))
+            desired_quat = T.axisangle2quat(action[3:6])
+            ori_delta = self._quat_error_local_xyzw(base_quat, desired_quat)
+            return np.concatenate((action[:3] - base_pos, ori_delta, action[6:]))
+
+        # Legacy alternate format: [pos(3), angle, axis(3), gripper...]
+        cmd_quat = Quaternion(angle=action[3], axis=action[4:7])
+        desired_quat = np.array([cmd_quat.x, cmd_quat.y, cmd_quat.z, cmd_quat.w])
+        ori_delta = self._quat_error_local_xyzw(base_quat, desired_quat)
+        return np.concatenate((action[:3] - base_pos, ori_delta, action[7:]))
 
     def step(self, action):
         reward = -100.0
@@ -154,17 +229,17 @@ class CustomOSCPoseWrapper(Wrapper):
         while dist > 0.004 and cnt > 0:
             # take the current position and gripper orientation with respect to world
             osc_pose_logger.debug(f"Target position {action[:3]}")
-            base_pos = self.env.sim.data.site_xpos[self.env.robots[0].eef_site_id]
+            base_pos = self.env.sim.data.site_xpos[_eef_site_id(self.env)]
             base_quat = T.mat2quat(np.reshape(
-                self.env.sim.data.site_xmat[self.env.robots[0].eef_site_id], (3, 3)))
+                self.env.sim.data.site_xmat[_eef_site_id(self.env)], (3, 3)))
             global_action = self.convert_rotation_gripper_to_world(
                 action, base_pos, base_quat)
             osc_pose_logger.debug(f"Global delta position {global_action[:3]}")
-            obs, reward_t, done, info = self.env.step(global_action)
+            obs, reward_t, done, info = _split_step_result(self.env.step(global_action))
             reward = max(reward, reward_t)
             
             dist = np.linalg.norm(
-                self.env.sim.data.site_xpos[self.env.robots[0].eef_site_id] - action[:3])
+                self.env.sim.data.site_xpos[_eef_site_id(self.env)] - action[:3])
             
             if round(prev_dist,4) == round(dist,4):
                 # if the distance does not change, the robot is not moving
@@ -177,9 +252,16 @@ class CustomOSCPoseWrapper(Wrapper):
             "----------------------------------------------\n\n")
         return self.post_proc_obs(obs, self.env), reward, done, info
 
-    def reset(self):
-        obs = super().reset()
-        return self.post_proc_obs(obs, self.env)
+    def reset(self, *args, **kwargs):
+        reset_result = super().reset(*args, **kwargs)
+        if isinstance(reset_result, tuple) and len(reset_result) == 2:
+            obs, info = reset_result
+            return self.post_proc_obs(obs, self.env), info
+        return self.post_proc_obs(reset_result, self.env)
 
     def _get_observation(self):
-        return self.post_proc_obs(self.env._get_observation(), self.env)
+        if hasattr(self.env, "_get_observation"):
+            obs = self.env._get_observation()
+        else:
+            obs = self.env._get_obs()
+        return self.post_proc_obs(obs, self.env)

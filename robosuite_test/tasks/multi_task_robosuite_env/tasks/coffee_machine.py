@@ -8,10 +8,10 @@ from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject, PlateWithHoleObject, PotWithHandlesObject, HammerObject, BottleObject
-multi_task_robosuite_env.objects.custom_xml_objects import SpriteCan, CanObject2, CerealObject3, Banana, CerealObject2
+from multi_task_robosuite_env.objects.custom_xml_objects import SpriteCan, CanObject2, CerealObject3, Banana, CerealObject2
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import UniformRandomSampler, SequentialCompositeSampler
-multi_task_robosuite_env.objects.meta_xml_objects import CoffeeMachine, Mug
+from multi_task_robosuite_env.objects.meta_xml_objects import CoffeeMachine, Mug
 
 
 class PandaManipulation(SingleArmEnv):
@@ -139,7 +139,7 @@ class PandaManipulation(SingleArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types="default",
+            base_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -463,7 +463,7 @@ class PandaManipulation(SingleArmEnv):
 if __name__ == '__main__':
     from robosuite.environments.manipulation.pick_place import PickPlace
     import robosuite
-    from robosuite.controllers import load_controller_config
+    from robosuite.controllers import load_composite_controller_config as load_controller_config
 
     controller = load_controller_config(default_controller="IK_POSE")
     env = PandaManipulation(robots=['Panda'], has_renderer=True, controller_configs=controller,

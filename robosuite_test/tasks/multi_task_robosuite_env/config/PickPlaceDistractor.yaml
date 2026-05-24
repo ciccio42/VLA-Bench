@@ -1,7 +1,7 @@
 #---- Parameters related to env configuration ----#
 
-# Mount type
-mount_types: null
+# Base type
+base_types: "default"
 
 # Gripper type
 gripper_types: "default"

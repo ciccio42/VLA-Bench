@@ -4,7 +4,7 @@ import numpy as np
 from robosuite.utils.transform_utils import convert_quat, quat2mat, mat2quat
 from robosuite.utils.mjcf_utils import CustomMaterial
 
-from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.objects import (
     MilkVisualObject,
     BreadVisualObject,
@@ -16,14 +16,16 @@ from multi_task_robosuite_env.objects.custom_xml_objects import *
 from multi_task_robosuite_env.sampler import BoundarySampler
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import UniformRandomSampler, SequentialCompositeSampler
+from robosuite.utils.observables import Observable, sensor
 from multi_task_robosuite_env.objects.meta_xml_objects import Bin
 from robosuite.utils.mjcf_utils import CustomMaterial, array_to_string, find_elements
 import robosuite.utils.transform_utils as T
+from multi_task_robosuite_env.tasks import _ordered_range
 
 OFFSET = 0.0
 
 
-class PickPlace(SingleArmEnv):
+class PickPlace(ManipulationEnv):
     """
     This class corresponds to the stacking task for a single robot arm.
     Args:
@@ -105,7 +107,7 @@ class PickPlace(SingleArmEnv):
             robots,
             env_configuration="default",
             controller_configs=None,
-            mount_types="default",
+            base_types="default",
             gripper_types="default",
             robot_offset=None,
             initialization_noise="default",
@@ -124,6 +126,7 @@ class PickPlace(SingleArmEnv):
             render_visual_mesh=True,
             render_gpu_device_id=-1,
             control_freq=20,
+            lite_physics=True,
             horizon=1000,
             ignore_done=False,
             hard_reset=True,
@@ -131,6 +134,10 @@ class PickPlace(SingleArmEnv):
             camera_heights=256,
             camera_widths=256,
             camera_depths=False,
+            camera_segmentations=None,
+            renderer="mjviewer",
+            renderer_config=None,
+            seed=None,
             camera_poses=None,
             camera_attribs=None,
             camera_gripper=None,
@@ -142,6 +149,7 @@ class PickPlace(SingleArmEnv):
             arena="Table"
     ):
         print(f"Render GPU id {render_gpu_device_id}")
+        env_conf = env_conf or {}
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
@@ -150,7 +158,7 @@ class PickPlace(SingleArmEnv):
         self.object_id = int(task_id//4)
         self.bin_id = task_id % 4
         self.bin_size = np.array((0.16, 0.16))
-        self.object_set = env_conf['object_set']
+        self.object_set = env_conf.get('object_set', 1)
         print(f"Object set {self.object_set}")
         self.env_name = "pick_place"
 
@@ -220,11 +228,11 @@ class PickPlace(SingleArmEnv):
                 object_type
             ]  # use for convenient indexing
 
-        self.y_ranges = y_ranges
-        self.x_ranges = env_conf['x_ranges']
+        self.y_ranges = _ordered_range(y_ranges)
+        self.x_ranges = _ordered_range(env_conf.get('x_ranges', [[-0.2, 0.2]]))
 
-        self.bin_position_x = env_conf['bin_position_x']
-        self.bin_position_y = env_conf['bin_position_y']
+        self.bin_position_x = _ordered_range([env_conf.get('bin_position_x', [0.0, 0.0])])[0]
+        self.bin_position_y = _ordered_range([env_conf.get('bin_position_y', [0.0, 0.0])])[0]
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -244,11 +252,13 @@ class PickPlace(SingleArmEnv):
         self.camera_height = camera_heights
         self.camera_width = camera_widths
 
+        base_types = self._base_type(base_types, robots)
+
         super().__init__(
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types=mount_types,
+            base_types=base_types,
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -259,14 +269,38 @@ class PickPlace(SingleArmEnv):
             render_visual_mesh=render_visual_mesh,
             render_gpu_device_id=render_gpu_device_id,
             control_freq=control_freq,
+            lite_physics=lite_physics,
             horizon=horizon,
-            ignore_done=env_conf['ignore_done'],
+            ignore_done=env_conf.get('ignore_done', ignore_done),
             hard_reset=hard_reset,
             camera_names=camera_names,
             camera_heights=camera_heights,
             camera_widths=camera_widths,
             camera_depths=camera_depths,
+            camera_segmentations=camera_segmentations,
+            renderer=renderer,
+            renderer_config=renderer_config,
+            seed=seed,
         )
+
+
+    def _base_type(self,base_types, robots):
+        if base_types != "default":
+            return base_types
+
+        robot_list = robots if isinstance(robots, (list, tuple)) else [robots]
+
+        def default_base_for(robot_name):
+            name = str(robot_name)
+            if "Sawyer" in name:
+                return "RethinkMount"
+            if "Baxter" in name:
+                return "RethinkMinimalMount"
+            # Panda, UR5e, IIWA, Kinova3, Jaco, etc. are table-mounted here.
+            return "NullMount"
+
+        resolved = [default_base_for(robot) for robot in robot_list]
+        return resolved[0] if not isinstance(robots, (list, tuple)) or len(resolved) == 1 else resolved
 
     def init_object_dicts(self):
         box_names = ["greenbox",
@@ -425,6 +459,13 @@ class PickPlace(SingleArmEnv):
                     object_seq.append(NamedRoundNutObject)
                 else:
                     object_seq.append(BoxObject)
+        else:
+            object_seq = []
+            for obj_name in self.obj_names:
+                if "nut" in obj_name:
+                    object_seq.append(NamedRoundNutObject)
+                else:
+                    object_seq.append(BoxObject)
 
         for obj_cls, obj_name in zip(
                 object_seq,
@@ -485,12 +526,12 @@ class PickPlace(SingleArmEnv):
                 name="BinSampler",
                 mujoco_objects=self.bin,
                 x_range=[self.bin_position_x[0],
-                         self.bin_position_x[1] + 1e-4],
+                         self.bin_position_x[1]],
                 y_range=[self.bin_position_y[0],
-                         self.bin_position_y[1] + 1e-4],
+                         self.bin_position_y[1]],
                 rotation=[0, 0 + 1e-4],
                 rotation_axis='z',
-                ensure_object_boundary_in_range=True,
+                ensure_object_boundary_in_range=False,
                 ensure_valid_placement=False,
                 reference_pos=self.table_offset,
                 z_offset=0.0,
@@ -730,6 +771,126 @@ class PickPlace(SingleArmEnv):
 
         return p_x_center, p_y_center, p_x_corner_list, p_y_corner_list
 
+
+    def _get_eef_pose(self):
+        """Return the first arm EEF pose in world frame as (pos, quat_xyzw)."""
+        robot = self.robots[0]
+        arms = getattr(robot, "arms", ["right"])
+        arm = arms[0]
+        eef_site_id = robot.eef_site_id[arm] if isinstance(robot.eef_site_id, dict) else robot.eef_site_id
+        eef_pos = np.array(self.sim.data.site_xpos[eef_site_id])
+        eef_quat = T.mat2quat(np.reshape(self.sim.data.site_xmat[eef_site_id], (3, 3)))
+        return eef_pos, eef_quat
+
+    def _get_object_pose(self, obj_name):
+        """Return object pose, preserving the original special handling for nut handle sites."""
+        if "nut" in obj_name:
+            site_id = self.sim.model.site_name2id(f"{obj_name}_handle_site")
+            obj_pos = np.array(self.sim.data.site_xpos[site_id])
+            obj_quat = T.mat2quat(np.reshape(self.sim.data.site_xmat[site_id], (3, 3)))
+        else:
+            body_id = self.obj_body_id[obj_name]
+            obj_pos = np.array(self.sim.data.body_xpos[body_id])
+            obj_quat = T.convert_quat(self.sim.data.body_xquat[body_id], to="xyzw")
+        return obj_pos, obj_quat
+
+    def _object_state_vector(self):
+        """Rebuild the legacy object-state vector from robosuite-1.5 observable sensors."""
+        pr = self.robots[0].robot_model.naming_prefix
+        eef_pos, eef_quat = self._get_eef_pose()
+        gripper_pose = T.pose2mat((eef_pos, eef_quat))
+        world_pose_in_gripper = T.pose_inv(gripper_pose)
+
+        values = []
+        for obj in self.objects:
+            obj_name = obj.name
+            obj_pos, obj_quat = self._get_object_pose(obj_name)
+            object_pose = T.pose2mat((obj_pos, obj_quat))
+            rel_pose = T.pose_in_A_to_pose_in_B(object_pose, world_pose_in_gripper)
+            rel_pos, rel_quat = T.mat2pose(rel_pose)
+            values += [obj_pos, obj_quat, rel_pos, rel_quat]
+        return np.concatenate(values) if values else np.array([])
+
+    def _make_sensor(self, name, fn, modality="object"):
+        """Create a robosuite Observable sensor with a stable observation key name."""
+        @sensor(modality=modality)
+        def wrapped(obs_cache):
+            return fn()
+        wrapped.__name__ = name
+        return wrapped
+
+    def _setup_observables(self):
+        """
+        robosuite >= 1.5 uses Observable objects instead of overriding _get_observation().
+        This recreates the legacy observation keys produced by the old env:
+          - target-box-id, target-object
+          - <obj>_pos, <obj>_quat, <obj>_to_robot0_eef_pos, <obj>_to_robot0_eef_quat
+          - bin_box_i_pos
+          - object-state
+          - obj_bb
+        """
+        observables = super()._setup_observables()
+        if not self.use_object_obs:
+            return observables
+
+        modality = "object"
+        pr = self.robots[0].robot_model.naming_prefix
+        sensors = []
+
+        sensors.append(self._make_sensor("target-box-id", lambda: np.array(self.bin_id), modality))
+        sensors.append(self._make_sensor("target-object", lambda: np.array(self.object_id), modality))
+
+        for obj in self.objects:
+            obj_name = obj.name
+            sensors.append(self._make_sensor(f"{obj_name}_pos", lambda n=obj_name: self._get_object_pose(n)[0], modality))
+            sensors.append(self._make_sensor(f"{obj_name}_quat", lambda n=obj_name: self._get_object_pose(n)[1], modality))
+
+            def rel_pos(n=obj_name):
+                eef_pos, eef_quat = self._get_eef_pose()
+                world_pose_in_gripper = T.pose_inv(T.pose2mat((eef_pos, eef_quat)))
+                obj_pos, obj_quat = self._get_object_pose(n)
+                rel_pose = T.pose_in_A_to_pose_in_B(T.pose2mat((obj_pos, obj_quat)), world_pose_in_gripper)
+                return T.mat2pose(rel_pose)[0]
+
+            def rel_quat(n=obj_name):
+                eef_pos, eef_quat = self._get_eef_pose()
+                world_pose_in_gripper = T.pose_inv(T.pose2mat((eef_pos, eef_quat)))
+                obj_pos, obj_quat = self._get_object_pose(n)
+                rel_pose = T.pose_in_A_to_pose_in_B(T.pose2mat((obj_pos, obj_quat)), world_pose_in_gripper)
+                return T.mat2pose(rel_pose)[1]
+
+            sensors.append(self._make_sensor(f"{obj_name}_to_{pr}eef_pos", rel_pos, modality))
+            sensors.append(self._make_sensor(f"{obj_name}_to_{pr}eef_quat", rel_quat, modality))
+
+        for bin_name in ["bin_box_1", "bin_box_2", "bin_box_3", "bin_box_4"]:
+            sensors.append(
+                self._make_sensor(
+                    f"{bin_name}_pos",
+                    lambda n=bin_name: np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(n)]),
+                    modality,
+                )
+            )
+
+        sensors.append(self._make_sensor("object-state", self._object_state_vector, modality))
+
+        def obj_bb_sensor():
+            di = {f"{name}_pos": np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(name)])
+                  for name in ["bin_box_1", "bin_box_2", "bin_box_3", "bin_box_4"]}
+            return self._create_bb(di)
+
+        sensors.append(self._make_sensor("obj_bb", obj_bb_sensor, modality))
+
+        for s in sensors:
+            observables[s.__name__] = Observable(
+                name=s.__name__,
+                sensor=s,
+                sampling_rate=self.control_freq,
+                enabled=True,
+                active=True,
+            )
+
+        return observables
+
     def _get_observation(self):
         """
         Returns an OrderedDict containing observations [(name_string, np.array), ...].
@@ -743,7 +904,10 @@ class PickPlace(SingleArmEnv):
             depth: requires @self.use_camera_obs and @self.camera_depth to be True.
                 contains a rendered depth map from the simulation
         """
-        di = super()._get_observation()
+        # Legacy compatibility path. robosuite >= 1.5 normally uses _setup_observables(),
+        # but keeping this method makes the file safer if older wrappers call it directly.
+        parent_get_obs = getattr(super(), "_get_observation", None)
+        di = parent_get_obs() if parent_get_obs is not None else OrderedDict()
 
         di['target-box-id'] = self.bin_id
         di['target-object'] = self.object_id
@@ -805,13 +969,13 @@ class PickPlace(SingleArmEnv):
 
         return di
 
-    def _get_reference(self):
+    def _setup_references(self):
         """
         Sets up references to important components. A reference is typically an
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        super()._get_reference()
+        super()._setup_references()
         self.obj_body_id = {}
         self.obj_geom_id = {}
 
@@ -879,9 +1043,12 @@ class PickPlace(SingleArmEnv):
         super().visualize(vis_settings=vis_settings)
 
         # Color the gripper visualization site according to its distance to the cube
-        if vis_settings["grippers"]:
+        if vis_settings["grippers"] and len(self.objects) > 0:
             self._visualize_gripper_to_target(
-                gripper=self.robots[0].gripper, target=self.drawers[self.drawer_id])
+                gripper=self.robots[0].gripper,
+                target=self.objects[self.object_id].root_body,
+                target_type="body",
+            )
 
 
 class UR5ePickPlace(PickPlace):
@@ -923,7 +1090,8 @@ class SawyerPickPlace(PickPlace):
 if __name__ == '__main__':
     from robosuite.environments.manipulation.pick_place import PickPlace
     import robosuite
-    from robosuite.controllers import load_controller_config
+    from robosuite.controllers import load_part_controller_config
+    from robosuite.controllers.composite.composite_controller_factory import refactor_composite_controller_config
     import debugpy
     import yaml
     import cv2
@@ -932,7 +1100,8 @@ if __name__ == '__main__':
     print("Waiting for debugger attach")
     debugpy.wait_for_client()
 
-    controller = load_controller_config(default_controller="IK_POSE")
+    part_controller = load_part_controller_config(default_controller="IK_POSE")
+    controller = refactor_composite_controller_config(part_controller, robot_type="UR5e", arms=["right"])
 
     # load env conf
     with open('/raid/home/frosa_Loc/Multi-Task-LFD-Framework/repo/Multi-Task-LFD-Training-Framework/tasks/multi_task_robosuite_env/config/PickPlaceDistractor.yaml', 'r') as file:

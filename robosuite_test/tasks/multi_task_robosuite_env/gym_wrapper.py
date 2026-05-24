@@ -1,4 +1,4 @@
-from hem.robosuite import get_env
+from multi_task_robosuite_env import get_env
 from gym import spaces, Env
 from collections import OrderedDict
 import numpy as np

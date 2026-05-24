@@ -146,7 +146,7 @@ class Insert(SingleArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types="default",
+            base_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -431,7 +431,7 @@ class SawyerInsert(Insert):
         super().initialize_time(control_freq)
 
 if __name__ == '__main__':
-    from robosuite.controllers import load_controller_config
+    from robosuite.controllers import load_composite_controller_config as load_controller_config
 
 
     controller = load_controller_config(default_controller="IK_POSE")

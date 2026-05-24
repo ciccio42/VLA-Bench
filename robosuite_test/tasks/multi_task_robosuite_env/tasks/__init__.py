@@ -53,3 +53,16 @@ darkwood = CustomMaterial(
     tex_attrib=tex_attrib,
     mat_attrib=mat_attrib,
 )
+
+def _ordered_range(r, eps=1e-4):
+    ordered_list = []
+    
+    for range_pair in r:
+        if range_pair[0] < range_pair[1]:
+            ordered_list.append([range_pair[0], range_pair[1]])
+        elif range_pair[0] > range_pair[1]:
+            ordered_list.append([range_pair[1], range_pair[0]])
+        else:
+            ordered_list.append([range_pair[0] - eps, range_pair[1] + eps])
+    
+    return ordered_list
