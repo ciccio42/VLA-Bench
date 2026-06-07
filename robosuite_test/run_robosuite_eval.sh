@@ -1,7 +1,6 @@
 #!/bin/sh
 #SBATCH -A did_robot_learning_359
-#SBATCH --exclude=gnode[13-14]
-#SBATCH --exclude=gnode01
+#SBATCH --exclude=gnode[12-14]
 #SBATCH --partition=gpuq
 #SBATCH --gres=gpu:1
 #SBATCH --nodes=1
@@ -10,11 +9,13 @@
 #SBATCH --ntasks=1
 #SBATCH --export=ALL
 
+
 export MUJOCO_PY_MUJOCO_PATH="/home/rsofnc000/.mujoco/mujoco210"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/rsofnc000/.mujoco/mujoco210/bin
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/nvidia
 export MUJOCO_GL=egl
 export PYOPENGL_PLATFORM=egl
+export PATH=/mnt/beegfs/frosa/.conda/envs/openvla_robosuite_1_0_1/bin:$PATH
 # ur5e_pick_place_delta_all 
 # ur5e_pick_place_delta_removed_0_5_10_15
 # ur5e_pick_place_rm_12_13_14_15

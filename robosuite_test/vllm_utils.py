@@ -11,7 +11,7 @@ import subprocess
 import yaml
 import os
 
-HOST_NAME = "gnode09"
+HOST_NAME = "gnode08"
 PATH_TO_BIN = "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/Video-Captioning/cosmos-reason2/.venv/bin/cosmos-reason2-inference"
     
 

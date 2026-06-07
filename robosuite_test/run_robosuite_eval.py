@@ -34,10 +34,10 @@ def eval_robosuite(cfg: EvalConfig) -> float:
     otd = bool(getattr(cfg.model_config, "otd", False))
     
     # Set random seed
-    # if 'rm_12_13_14_15' in cfg.task_suite_name:
-    #     set_seed_everywhere(0)
-    # else:        
-    set_seed_everywhere(cfg.seed)
+    if 'rm_12_13_14_15' in cfg.task_suite_name:
+        set_seed_everywhere(0)
+    else:        
+        set_seed_everywhere(cfg.seed)
     # Setup logging
     log_file, local_log_filepath, run_id = setup_logging(cfg)
     # Get expected image dimensions

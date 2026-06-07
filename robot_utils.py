@@ -2,6 +2,7 @@
 
 import os
 import random
+import socket
 import time
 import numpy as np
 import torch
@@ -105,6 +106,7 @@ def set_seed_everywhere(seed: int) -> None:
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     os.environ["PYTHONHASHSEED"] = str(seed)
+    # logger.info("Host: %s", socket.gethostname())
     # tf.config.experimental.enable_op_determinism()
     # tf.random.set_seed(seed)
 

@@ -66,8 +66,8 @@ if __name__ == "__main__":
         result[run_number] = dict()
         
         json_files = glob.glob(os.path.join(folder, "*.json"))
-        json_files.sort(key= lambda x: int(x.split('/')[-1].split('_')[-1].split('.')[0]))
-        for i, file_path in enumerate(json_files):
+        json_files.sort(key= lambda x: int(x.split('/')[-1].split('_')[-1].split('.')[0])) # sort by episode number and take first 120 episodes
+        for i, file_path in enumerate(json_files[:120]):
             # print(f"{file_path.split('/')[-1]}")
             with open(file_path, 'r') as file:
                 data = json.load(file)
