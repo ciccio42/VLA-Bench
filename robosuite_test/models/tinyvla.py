@@ -15,7 +15,7 @@ from llava_pythia.mm_utils import tokenizer_image_token, get_model_name_from_pat
 from llava_pythia.model.language_model.pythia.llava_pythia import LlavaPythiaConfig
 from llava_pythia.constants import IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
 from robosuite_utils import normalize_angle, TASK_CROP
-from robot_utils import set_seed_everywhere
+from robot_utils import set_seed_everywhere, TASK_MAX_STEPS
 from tinyvla_utils import rot_6d_to_euler_angles, SCALE_FACTOR, R_EE_TO_GRIPPER, euler_to_axis_angle
 from PIL import Image
 from torchvision.transforms.functional import to_pil_image
@@ -161,7 +161,7 @@ class llava_pythia_act_policy:
             num_queries = self.policy.config.chunk_size
         else:
             query_frequency = 1
-        max_timesteps = int(200)  # may increase for real-world tasks
+        max_timesteps = TASK_MAX_STEPS.get(getattr(self.policy_config, "task_suite_name", None), 200)
 
         ### evaluation loop
         if temporal_agg and n_steps == 0:

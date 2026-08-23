@@ -45,21 +45,20 @@ def eval_robosuite(cfg: EvalConfig) -> float:
     
     # Initialize Models
     run_episode_fn = None
+    from robosuite_test.vllm_utils import is_vllm_server_up, run_vllm_server, HOST_NAME
+    if use_vllm:
+        print(f"Using Cosmos model name: {cfg.model_config.model_cosmos_name}")
+        ok, msg = is_vllm_server_up(HOST_NAME, cfg.model_config.model_cosmos_port)
+        print(ok, msg)
+        assert ok, "vLLM server is not reachable. Please start the vLLM server before running evaluation."
+        cfg.model_config.model_cosmos_name = msg.split("Models available: ")[1].strip("[]").replace("'", "").split(", ")[0]
+
     if cfg.model_family.lower() == "openvla":
         from robosuite_test.models.openvla import open_vla_policy
-        from robosuite_test.vllm_utils import is_vllm_server_up, run_vllm_server, HOST_NAME
-        if use_vllm:
-            print(f"Using Cosmos model name: {cfg.model_config.model_cosmos_name}")
-            ok, msg = is_vllm_server_up(HOST_NAME, cfg.model_config.model_cosmos_port)
-            print(ok, msg)
-            assert ok, "vLLM server is not reachable. Please start the vLLM server before running evaluation."
-            cfg.model_config.model_cosmos_name = msg.split("Models available: ")[1].strip("[]").replace("'", "").split(", ")[0]
-            
-            
         # Validate configuration
         print(f"Running OpenVLA evaluation....")
         policy = open_vla_policy(cfg.model_config)
-        
+
     elif cfg.model_family.lower() == "tinyvla":
         from robosuite_test.models.tinyvla import llava_pythia_act_policy
         print(f"Running TinyVLA evaluation....")
@@ -68,7 +67,12 @@ def eval_robosuite(cfg: EvalConfig) -> float:
         setattr(cfg.model_config, "task_suite_name", cfg.task_suite_name)
         policy = llava_pythia_act_policy(cfg.model_config)
         #run_tinyvla_eval(cfg)
-    
+
+    elif cfg.model_family.lower() == "lerobot":
+        from robosuite_test.models.lerobot_policy import lerobot_remote_policy
+        print(f"Running LeRobot policy evaluation....")
+        policy = lerobot_remote_policy(cfg.model_config)
+
     
     # # Initialize Robosuite environment
     # np.random.seed(42) # 42

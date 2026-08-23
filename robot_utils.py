@@ -80,6 +80,7 @@ MODEL_IMAGE_SIZES = {
     "openvla": 224,
     # Add other models as needed
     "tinyvla": 224,
+    "lerobot": 224,
 }
 
 # Set up logging

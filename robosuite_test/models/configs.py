@@ -63,12 +63,28 @@ class TinyVLAConfig(ModelConfig):
     conv_mode: str = 'pythia'
     action_head: str = 'droid_diffusion'
     task_suite_name: str = ''
+    otd: bool = False
     use_cosmos_name: bool = False      # Whether to use Cosmos names for the tasks
     model_cosmos_name: str = "nvidia/Cosmos-Reason2-8B"  # Cosmos name of the model
-    
+    model_cosmos_port: int = 8000          # Port where the vLLM server is running
+    dataset_path: str = '/mnt/beegfs/frosa/robot_datasets/dataset/no_opt_dataset'  # Task suite name
 
-    
-    
+
+@ModelConfig.register_subclass('lerobot')
+@dataclass
+class LeRobotPolicyConfig(ModelConfig):
+    # Talks to lerobot_policy_server.py (lerobot/lerobot/run_eval_scripts/) over HTTP instead of
+    # loading a model in-process — see VLA-Benchmark/robosuite_test/LEROBOT_EVAL.md.
+    model_path: str = ""          # LeRobot checkpoint dir the server was started with (for logging/save_path only)
+    server_port: int = 8765
+    chunk_size: int = 1
+    task_suite_name: str = ''
+    otd: bool = False
+    use_cosmos_name: bool = False
+    dataset_path: str = ''
+
+
+
 @dataclass
 class EvalConfig:
     

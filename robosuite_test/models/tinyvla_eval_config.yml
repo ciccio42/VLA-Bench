@@ -21,8 +21,9 @@ run_id_note: *tsn
 
 model_config:
   type: tinyvla
-  model_path: '/mnt/beegfs/frosa/checkpoint_save_folder/checkpoint_save_folder/tiny_vla/TEST_OK/post_processed_tiny_vla_llava_pythia_lora_ur5e_pick_place_delta_all_lora_r_128_processed/checkpoint-40000'
-  model_base: "/mnt/beegfs/frosa/checkpoint_save_folder/checkpoint_save_folder/tiny_vla/llava_pythia/1.3B"
+  model_path: '/mnt/beegfs/frosa/checkpoint_save_folder/checkpoint_save_folder/tiny_vla/post_processed_tiny_vla_llava_pythia_lora_ur5e_pick_place_rm_12_13_14_15_lora_r_128_processed/checkpoint-40000'
+  model_base: "/mnt/beegfs/frosa/checkpoint_save_folder/checkpoint_save_folder/tiny_vla/llava_pythia_ur5e_pick_place_delta_rm_12_13_14_15_128/1.3B"
+  otd: true
   enable_lora: true
   conv_mode: 'pythia'
   action_head: 'droid_diffusion' 

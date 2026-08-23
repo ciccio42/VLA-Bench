@@ -12,7 +12,7 @@ import yaml
 import os
 
 HOST_NAME = "gnode08"
-PATH_TO_BIN = "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/Video-Captioning/cosmos-reason2/.venv/bin/cosmos-reason2-inference"
+PATH_TO_BIN = "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/Video-Captioning/Video-Captioning-Human-Demo/cosmos-reason2/.venv/bin/cosmos-reason2-inference"
     
 
 def is_vllm_server_up(
