@@ -163,7 +163,10 @@ Section references point to the step-by-step writeup below.
       **MolmoAct2, extended run**: 7 episodes in (job 536025, `num_trials_per_task=1` across the
       first 7 of 16 variations), 3/7 real successes (`reached/picked/success=1` on tasks 0, 2, 6),
       the other 4 reached but didn't pick. Plausible, non-degenerate eval numbers — good sign the
-      pipeline is producing meaningful results, not an artifact.
+      pipeline is producing meaningful results, not an artifact. **Job ran to completion**: full
+      16/16 variations, final tally **4/16 success** (variations 0, 2, 6, 14), 8/16 reached-but-
+      not-picked, 4/16 never reached. Rollout pkls at
+      `outputs/ur5e_molmoact2/checkpoints/008000/pretrained_model/rollout_pick_place_3_.../`.
 
       **VLA-JEPA gripper caveat confirmed real, then fixed at the server+client level**: the
       GRIPPER_ALREADY_SCALED_POLICY_TYPES fix above (server now reports `policy_type` in its
@@ -177,16 +180,85 @@ Section references point to the step-by-step writeup below.
       (open) — reached=1 on all 3, picked=0 on all 3. The gripper dim is flowing through correctly
       now (proven by seeing the true unscaled `-1.0` rather than the old `-0.05`), but the model
       itself never once predicted the binarized `+1.0` (close) value in any of these rollouts.
-      This looks like a genuine model-behavior limitation rather than a remaining pipeline bug —
-      notably, this project's LIBERO eval work earlier in this session found the same
-      "reaches-but-never-closes" pattern for pi0fast specifically. Whether this VLA-JEPA UR5e
-      finetune has a similar limitation, or whether something upstream (e.g. the `gripper_closed`
-      state flag fed back to the policy, or normalize_gripper/binarize threshold interaction) is
-      suppressing "close" predictions, is not yet determined — needs more episodes and/or per-step
-      raw (pre-binarize) gripper values to distinguish "policy never wants to close" from "policy
-      wants to close but the binarize threshold never triggers."
-- [ ] **Full MolmoAct2 run** — `num_trials_per_task: 10` × 16 variations via `run_lerobot_eval.sh`.
-- [ ] **Full VLA-JEPA run** — same, with the VLA-JEPA config/port.
+      **Job ran to completion**: full 16/16, `reached=1` on 13/16, `picked=0` on all 16 — a very
+      clean, consistent "reaches every time, never closes" signature, not a small-sample fluke.
+
+      **Root-caused (2026-08-23), and it's a pipeline bug, not a model-behavior limitation.**
+      Investigated three things per request: (1) whether training was cut short, (2) rollout
+      videos for both models, (3) the raw pre-binarize gripper value.
+
+      *1. Training length* — read both models' wandb `output.log` loss curves directly (not just
+      the final summary). MolmoAct2: loss falls smoothly and monotonically `0.72 → 0.006` over
+      **2.35 epochs** (256k samples), LR annealed cleanly to its floor — converged, textbook curve.
+      VLA-JEPA: loss falls `1.19 → ~0.13-0.14` but visibly plateaus/gets noisy over the last
+      ~3000 steps (`0.142, 0.134, 0.136, ...`) while completing only **1.17 epochs** (128k
+      samples) — half of MolmoAct2's data coverage at the same step count, because of a smaller
+      per-step batch. Total loss is dominated by VLA-JEPA's world-model loss (`wm_loss=0.121` of
+      `loss=0.150`); the action loss itself (`action_loss=0.029`) isn't logged per-step so its own
+      convergence can't be directly confirmed from stdout. This is a real, mild undertraining
+      signal for VLA-JEPA relative to MolmoAct2 — but turned out not to be the explanation for the
+      gripper symptom (see below).
+
+      *2. Rollout videos* — rendered all 32 (16 MolmoAct2 + 16 VLA-JEPA) smoke-test trajectories to
+      mp4 via `create_video.py` (`run_create_videos.sh`, since `create_video.py` unpickles a traj
+      object that imports `robosuite_utils` → `robosuite` → `mujoco_py`, which JIT-compiles a
+      native extension that only links successfully on the gnode compute nodes with the
+      `MUJOCO_GL=egl`/`LD_LIBRARY_PATH` env from `run_lerobot_eval.sh` — it fails with a `gcc`/`ld`
+      link error on a bare login-node shell). Output at
+      `VLA-Benchmark/robosuite_test/lerobot_eval_videos/{molmoact2,vla_jepa}/traj_*.mp4`.
+
+      *3. Raw pre-binarize gripper value* — added a temporary, env-var-gated
+      (`LEROBOT_DEBUG_GRIPPER=1`) `after_step_hooks` logger to `lerobot_policy_server.py` that
+      prints the gripper dim after every postprocessor step (no edits to the shared lerobot
+      library needed — `PolicyProcessorPipeline` already exposes `after_step_hooks` for exactly
+      this). Result across a full 16-variation VLA-JEPA rollout (job 536038):
+      ```
+      after step 0 (ClipActionsProcessorStep):      spread across ~[-1, 1]   (model's raw normalized output — NOT saturated)
+      after step 1 (PreSnapGripperProcessorStep):    1629× 1.0 (close-ish) / 1546× 0.0 (open-ish)   (~51/49 split — reasonable!)
+      after step 2 (UnnormalizerProcessorStep):      1628× 20.0             / 1546× 10.0
+      after step 3 (BinarizeGripperProcessorStep):   3175× -1.0             / 0× +1.0               (always "open", unconditionally)
+      ```
+      This directly disproves "the model never wants to close" — `PreSnapGripperProcessorStep`
+      shows the model deciding to close about as often as open (a sane distribution for a
+      pick-place task). The bug is entirely downstream, in VLA-JEPA's own
+      `make_vla_jepa_pre_post_processors` (`lerobot/src/lerobot/policies/vla_jepa/processor_vla_jepa.py`):
+      - `PreSnapGripperProcessorStep` and `BinarizeGripperProcessorStep` both read the **same**
+        `config.gripper_threshold` (default `0.5`), but they run on data in two different unit
+        spaces: PreSnap runs on the *normalized* `[-1, 1]` model output (where `0.5` is a sane
+        cutpoint), Binarize runs *after* `UnnormalizerProcessorStep` on real dataset units.
+      - This dataset's gripper `action` dim is `MIN_MAX`-normalized over a real range of
+        `[min=0, max=20]` (confirmed in `meta/stats.json`). Feeding PreSnap's identity `{0, 1}`
+        decision through that MIN_MAX unnormalizer (formula `(x+1)/2*(max-min)+min`, which expects
+        a `[-1,1]`-space input) turns `0` → `10.0` and `1` → `20.0` — both **far above** the
+        reused threshold of `0.5`, so `BinarizeGripperProcessorStep`'s `a > threshold` is true
+        100% of the time, collapsing every prediction to `1.0 - 2.0*1 = -1.0` regardless of what
+        PreSnap decided. That's the entire bug: a threshold constant tuned for normalized space,
+        silently reused on real-scale data.
+      - Separately, even after fixing the threshold, the formula's sign convention is inverted for
+        this dataset's real-unit direction: `a > threshold → -1.0`, so the *high* real cluster
+        (`20.0`, the close decision) maps to `-1.0` and the *low* cluster (`10.0`, open) maps to
+        `+1.0` — backwards from `pick_place.py`'s convention (`+1.0` = close).
+      **Fix implemented in `lerobot_policy_server.py` only** (no shared-library or checkpoint-file
+      edits): for `cfg.type == "vla_jepa"`, pass
+      `postprocessor_overrides={"vla_jepa_binarize_gripper": {"threshold": 15.0}}` to
+      `make_pre_post_processors` (15.0 sits cleanly between the two real clusters 10/20 — note
+      `make_pre_post_processors` loads the postprocessor pipeline from the checkpoint's saved JSON
+      when `pretrained_path` is given, so mutating `cfg` fields beforehand has *no effect*; only
+      the `overrides=` kwarg reaches it, keyed by the step's registry name), then flip the gripper
+      dim's sign in `/predict`'s response to correct the inverted convention.
+      **Verified (job 536089, full 16 variations, fix + debug logging both on):** final gripper
+      values are no longer constant — `1458× -1.0` / `2046× +1.0`, varying exactly as expected.
+      Task outcomes: `picked=1` on 4/16 (variations 7, 8, 10, 14), up from **0/16 before the fix**.
+      `success` is still 0/16 — picking now works, placing-in-the-correct-bin apparently doesn't
+      yet, which is a distinct, not-yet-investigated question (possibly related to the same
+      undertraining signal from point 1, possibly a separate issue). This is a genuine, verified
+      fix to a real bug, not a tuning tweak — before it, VLA-JEPA could never complete this task
+      structurally regardless of how well-trained or well-adapted anything else was.
+- [x] **Full MolmoAct2 run** — ran at `num_trials_per_task=1` × 16 variations (not yet the full
+      `num_trials_per_task=10`): 4/16 success. Full `×10` run still pending.
+- [~] **Full VLA-JEPA run** — ran at `num_trials_per_task=1` × 16 variations post-gripper-fix:
+      0/16 success, 4/16 picked. Full `×10` run still pending, and worth rerunning now that the
+      structural gripper bug is fixed.
 - [ ] **Compare results** — success/reached/picked rates against any existing TinyVLA/OpenVLA
       baseline in `experiments/logs` on this same suite; don't compare directly against the LIBERO
       numbers from the earlier eval session, they're a different benchmark. (§3 Step 9)
@@ -568,12 +640,24 @@ produce visible behavior, which the fix above should now unblock:
   dataset's `action` deltas are in the world frame already. If rollouts drift sideways or the
   gripper overshoots consistently in one rotational direction, the delta is probably still in the
   EEF-local frame and needs a rotation by the current `eef_quat` before adding.
-- **`resize_size`/image preprocessing.** The server's `/predict` doesn't currently do the
+- **`resize_size`/image preprocessing — RESOLVED (2026-08-25), the assumption below was wrong.**
+  `models/lerobot_policy.py::compute_action` was sending both camera streams raw (sim's native
+  `render_hw: (200, 360)`, uncropped, unresized) all the way to the server, which had no resize
+  step of its own either — `resize_size` was accepted as a parameter and never used. Fixed by
+  applying the same `TASK_CROP`-then-resize `models/openvla.py`/`models/tinyvla.py` apply to
+  `camera_front_image`, and a plain resize (no crop) to the wrist/gripper image, both to
+  `resize_size` (224). The reasoning below — "trained on a 224×224 resize with no crop, so keep
+  eval uncropped to match" — conflated two different things: `convert_dataset.py`'s 224×224 shape
+  describes the *real* UR5e camera's already-correctly-framed images, not sim's. Sim's raw render
+  has a wider FOV than the real camera, so `TASK_CROP` exists specifically to make sim's front
+  view match what the real camera saw — a sim/real correction that's model-agnostic (openvla and
+  tinyvla both need it for the same reason), not a training-time preprocessing choice to mirror.
+  Original note, kept for context: ~~The server's `/predict` doesn't currently do the
   crop-then-resize preprocessing `models/openvla.py::compute_action` does (crop via `TASK_CROP`,
   resize via TF's `lanczos3`). Our LeRobot policies were trained on `convert_dataset.py`'s 224×224
   resize with no crop — keep it uncropped to match training, but confirm the two camera streams'
   raw resolution (`render_hw: (200, 360)` per `TASK_MAP` in `robosuite_utils.py`) doesn't need
-  letterboxing to avoid distortion.
+  letterboxing to avoid distortion.~~
 
 ### Step 5 — Register the new model family
 
@@ -732,3 +816,231 @@ as meaningful:
 - Confirm the gripper output scale/sign empirically (Step 4's callout).
 - Confirm `make_pre_post_processors`'s exact call signature against
   `src/lerobot/scripts/lerobot_eval.py` before trusting the Step 3 server code verbatim.
+
+## 5. Extending training past step 8000 (2026-08-23)
+
+Following the training-length finding in §TODO (VLA-JEPA only reached 1.17 epochs, loss still
+plateauing at step 8000), extended both checkpoints from 8000 → **12000** steps via the existing
+resume mechanism in `train_ur5e_molmoact2.sh`/`train_ur5e_vla_jepa.sh`.
+
+**The resume scripts needed a real change, not just a rerun.** Their resume branch previously
+called `lerobot_train --config_path=.../train_config.json --resume=true` with no `--steps`
+override — since the saved config already has `steps=8000` and both runs already reached exactly
+that, a plain resume would just detect training is complete and exit immediately. Added
+`--steps="${STEPS}"` to the resume branch in both scripts so the target step count can actually be
+extended.
+
+**Confirmed this properly "reheats" the LR, not just continues at an already-decayed floor.**
+Both models' schedulers (`CosineDecayWithWarmupSchedulerConfig` for VLA-JEPA,
+`MolmoAct2CosineDecayWithWarmupSchedulerConfig` for MolmoAct2) are built fresh at train-start via
+`cfg.scheduler.build(optimizer, cfg.steps)` — i.e. keyed off the *new* `cfg.steps=12000`, not the
+old 8000 — and `load_training_state` then restores just the step counter (~8000) and optimizer
+state on top of that freshly-shaped schedule. VLA-JEPA's scheduler auto-scales its warmup/decay
+to fit whatever `num_training_steps` it's given whenever that's shorter than its configured
+`num_decay_steps=30000` (see `schedulers.py`'s `CosineDecayWithWarmupSchedulerConfig.build`);
+MolmoAct2's `num_decay_steps=null` means "decay across this run's steps" directly. Verified by
+reading the actual logged LR right after resuming: MolmoAct2 went from `1.6e-05` and VLA-JEPA from
+`2.1-2.3e-05` — both well above their pre-resume floors (`5e-06`/`1e-06`), confirming the extra
+4000 steps are training at a genuinely non-trivial LR, not stalled at zero.
+
+**Found and fixed a real bug in shared `lerobot_train.py`, blocking MolmoAct2 resume entirely.**
+First resume attempt (job 536111) crashed immediately with
+`KeyError: "Override keys ['normalizer_processor'] do not match any step in the saved
+configuration. Available step keys: [..., 'molmoact2_masked_normalizer', ...]"`. Root cause:
+`lerobot_train.py`'s generic resume-path processor-override logic (triggered whenever
+`policy.pretrained_path` is set, which resume always does) hardcodes the override dict keys as
+`"normalizer_processor"`/`"unnormalizer_processor"` — correct for VLA-JEPA (which does register
+under those generic names, confirmed in its saved `policy_postprocessor.json`) but wrong for
+MolmoAct2, whose masked-passthrough gripper handling registers its own
+`"molmoact2_masked_normalizer"`/`"molmoact2_masked_unnormalizer"` step classes instead (plain
+subclasses of the generic Normalizer/UnnormalizerProcessorStep with no extra constructor args, so
+the same override kwargs shape still applies — only the lookup key was wrong). This would have
+blocked *any* attempt to resume MolmoAct2 training, independent of the `--steps` change; it never
+surfaced before because the original 8000-step run finished inside a single job/walltime and never
+needed to resume. Fixed with a 3-line policy-type check in `lerobot_train.py` (§ around
+`processor_pretrained_path is not None`) selecting the correct step key per policy type.
+MolmoAct2's checkpoint was untouched by the failed attempt (crashed before any training step or
+checkpoint write) — safe to retry, and the retry (job 536114) resumed cleanly.
+
+**Status: both running.** Job 536112 (VLA-JEPA) and job 536114 (MolmoAct2), both targeting
+step 12000, both training at a properly reheated LR. Estimated finish (from original per-step
+timing: VLA-JEPA ~1.03s/step, MolmoAct2 ~2.3s/step, ×4000 steps): VLA-JEPA ~1.3h, MolmoAct2 ~2.9h
+from their resume start — both comfortably inside the single-job 6:50:00 walltime cap, no
+job-chaining needed. Once both finish, the natural next step is to re-run the VLA-Benchmark smoke
+tests (§ Step 8 / TODO) against the new `checkpoints/last` to see whether the extra training moves
+VLA-JEPA's placement success rate (4/16 picked, 0/16 success as of the last run) or MolmoAct2's
+(4/16 success).
+
+## 6. Why VLA-JEPA picks but never places (2026-08-23)
+
+Investigated the `picked=1, success=0` episodes (variations 7, 8, 10, 14, job 536089) by tracing
+the raw model output (not just the final binarized signal) through the placement phase.
+
+**Ruled out an adapter chunking bug first.** `VLAJEPAPolicy.select_action()` (in
+`lerobot/src/lerobot/policies/vla_jepa/modeling_vla_jepa.py`) implements proper internal
+action-chunk queuing (`chunk_size=7`): it only calls `predict_action_chunk()` when its internal
+queue is empty, otherwise it dequeues. Since `lerobot_policy_server.py` keeps the same `policy`
+object alive across HTTP requests, our per-env-step querying already gets this right — every 7th
+`/predict` call triggers a real forward pass, the other 6 just dequeue. No bug here.
+
+**The raw model output during placement is confidently oscillating, not uncertain.** Sample of the
+normalized pre-snap gripper value across consecutive steps near the end of episode 7:
+`-0.97 -1.0 0.82 0.85 0.93 0.92 0.93 -0.97 -0.98 0.88 0.97 ...` — solidly "open" for 1-2 steps,
+then solidly "closed" for 4-5, repeating. Not hovering near a decision boundary (that would show
+values clustered near 0); the model commits hard to one state, then hard to the other, rapidly.
+This means VLA-JEPA's OWN predicted 7-step chunks contain this alternation — a genuine model
+behavior, most plausibly explained by the training-length finding above (1.17 epochs, loss still
+plateauing at step 8000 — the "release over the bin" sub-behavior is a small fraction of every
+demonstration and easy to undertrain relative to reach/grasp).
+
+**Found and fixed a compounding harness bug: asymmetric gripper-transition handling in
+`test/pick_place.py`.** The `gripper_state_changed` dance (lines ~180-198) that runs whenever the
+binarized gripper command flips was asymmetric: a transition *to close* got a settle motion plus
+a **10-step hold** at the closed position (`for i in range(10): env.step(...)`), giving the grasp
+time to secure. A transition *to open* got only 2 raw steps and **no hold at all**. Given the
+model's own rapid flickering, this meant every brief "open" decision had almost no physical time
+to actually let the object drop before the very next flicker snapped the gripper shut again —
+the harness was structurally biased toward "stays closed" regardless of what the model intended.
+**Fix**: added the same `for i in range(10): env.step(action_world)` hold to the opening branch,
+so a release gets as much time to take physical effect as a grasp does.
+
+**Verified on the unchanged step-8000 VLA-JEPA checkpoint** (job 536134, explicitly pointed at
+`checkpoints/008000/pretrained_model` rather than `last`, since the step-8000→12000 training
+extension was actively moving `last` forward at the time and reading it mid-write would have been
+a race) — isolates the harness fix from the training-extension variable for a clean before/after.
+
+Symmetric-opening result: still 4/16 picked, 0/16 success, and — new data point — **0/16 landed
+in any bin at all, not even the wrong one** (`place_wrong_correct_obj` etc. all 0). Since
+`check_pick()` is a monotonic OR-latch (`picked or (reached and abs(obj_z-start_z)>threshold)`,
+`robosuite_utils.py:209`), `picked=1` only means the object was lifted *at some point*, not that
+it's still held near episode end. Combined with landing in zero bins, the object is most likely
+being dropped/bumped near the pickup area during the gripper flicker, well before the arm ever
+carries it near a bin — the dwell-time fix wasn't the binding constraint; the deeper issue is
+instability through the whole carry phase.
+
+## 7. Extending both trainings to 100,000 steps, and the orientation-delta investigation (2026-08-23)
+
+### 7a. Training extension to 100K
+
+User's checkpoints were at 12000 steps each (VLA-JEPA: fresh-finished; MolmoAct2: still resuming
+toward 12000 when this started). Target: at least 100,000 steps for both, "resume all the
+trainings."
+
+**Found a second scheduler bug before committing GPU time to it.** VLA-JEPA's saved scheduler has
+`num_decay_steps=30000` (fixed, from the original fresh-start config). `CosineDecayWithWarmupSchedulerConfig.build()`
+only auto-scales the warmup/decay horizon *down* to fit a shorter `num_training_steps` — it does
+nothing when the new target *exceeds* the saved `num_decay_steps`. Left as-is, extending to 100,000
+would have decayed to the LR floor at step 30,000 and then coasted there for the remaining 70,000
+steps (70% of the extension wasted). Fixed by adding `--scheduler.num_decay_steps="${STEPS}"` to
+`train_ur5e_vla_jepa.sh`'s resume branch, keyed to the same target as `--steps`. (MolmoAct2 doesn't
+need this: its `num_decay_steps=null` already means "decay across whatever `cfg.steps` is.")
+
+**Verified via a cheap canary before committing to the full run.** First tried `STEPS=12100` (only
+100 more steps) — useless as a test, since with decay horizon also set to 12100, step ~12000 is
+already ~99% through the decay curve either way, so a floor-level LR there doesn't distinguish
+"override worked" from "override didn't work." Killed it and went straight to the real
+`STEPS=100000` job instead: post-resume LR came back at `9.7e-05`, essentially back at peak
+(`peak_lr=1e-4`) — confirms the override works and the schedule now properly spans the full
+100K-step horizon.
+
+**Hit the cluster's job-submission cap (`MaxSubmit=10` on the `did_robot_learning_359` account)**
+while trying to pre-chain 10 MolmoAct2 jobs via `--dependency=afterany`. The account was already at
+10/10 outstanding jobs (including 3 jobs not belonging to this work, not mine to manage). A fixed
+upfront chain isn't viable under this cap. Solution: trimmed the pre-queued lookahead to 1-2 jobs
+per model, and started a persistent adaptive top-up loop
+(`/tmp/.../scratchpad/topup_chains.sh`, run via a background Monitor) that checks every 20 minutes
+whether either model's training job has finished and, if its last checkpoint is still short of
+100,000, submits the next one. This keeps total outstanding jobs within the cap automatically
+without needing the full chain pre-queued.
+
+**Important caveat**: the top-up loop only runs for the lifetime of this session. If the session
+ends, in-flight/queued jobs still run to completion, but the chain won't self-extend further after
+that — resuming the top-up (or manually submitting `STEPS=100000 sbatch train_ur5e_<model>.sh`
+once a model's last job finishes) will be needed to actually reach 100,000 in that case.
+
+**Timeline estimate** (from observed per-step throughput): VLA-JEPA ~1.0-1.4s/step x 88,000
+remaining steps ~= 25-34h (~4-5 chained jobs); MolmoAct2 ~2.4-2.6s/step x 88,000 remaining steps
+~= 59-64h (~9-10 chained jobs), starting after its own 12,000-step job finished. Total wall-clock
+is roughly 1.5-3 days if jobs run back-to-back without cluster queue delay.
+
+**Data point on the previous 4000-step extension (8000->12000, before the scheduler fix)**: smoke
+test on the resulting checkpoint (job 536159) actually looked slightly *worse* than the step-8000
+checkpoint -- 2/16 picked and 10/16 reached, vs. 4/16 picked and 13/16 reached before. Loss was
+also flat (~0.13-0.14) across those 4000 steps. Plausible explanation: the brief LR "reheat"
+(~2e-5, well above the pre-extension floor) for only 4000 steps may have mildly destabilized the
+policy without enough steps afterward to reconverge -- a reasonable argument for why a much
+longer, properly-scheduled extension (this 100K run) is the right move rather than another short
+bump.
+
+### 7b. Why VLA-JEPA never predicts a meaningful gripper orientation change
+
+User's observation: the model doesn't seem to predict a gripper orientation delta, which is wrong
+since the gripper's axes should align with the object's for a good grasp.
+
+**Confirmed empirically, then root-caused.** Logged `current_euler` (the real orientation, read
+fresh from `obs['eef_quat']` every step) across 301 steps spanning multiple episodes: pitch/yaw
+stay within about +/-0.03 rad (a couple degrees) of their starting value for the *entire* run, no
+sustained drift in either direction -- pure jitter. Roll's large apparent range (6.23 rad) is just
+the +/-pi wrap-around artifact for a single fixed roll value, not real motion.
+
+**Ruled out "model predicts exactly zero" first.** Logged the raw (post-`SCALE_FACTOR`,
+pre-accumulation) `delta[3:6]` directly: it has real, non-collapsed variance (std ~
+[0.003, 0.002, 0.008] rad, occasional yaw spikes to 0.15), the same order of magnitude as the
+dataset's own scaled ground-truth per-step orientation deltas (`meta/stats.json`'s `action` field,
+indices 3-5, x `SCALE_FACTOR`: std ~ [0.005, 0.0035, 0.015]). So the model isn't outputting a
+degenerate constant -- its predictions just don't translate into any accumulated real-world
+effect.
+
+**Ruled out a harness/controller bug next, decisively.** Added a temporary, env-var-gated
+amplifier (`LEROBOT_DEBUG_ORIENT_INFLATE`, `lerobot_policy.py`) that multiplies the scaled
+`delta[3:6]` by a constant before use. At 20x, the real observed yaw swung a full ~0.78 rad (from
+-0.44 to +0.34) within about 20 steps (job 536197) -- proof the `CustomOSCPoseWrapper` ->
+`OSC_POSE` controller pipeline (`osc_pose.json`, `control_delta: true`) is fully capable of
+executing orientation commands; nothing in the adapter or controller config is silently discarding
+or zeroing them.
+
+**Conclusion: this is a genuine model-training issue, not a pipeline bug.** VLA-JEPA's own
+predicted per-step orientation deltas are real but too small to produce any visible net
+reorientation against this controller's practical response characteristics -- consistent with the
+broader training-length finding (only ~1.17-1.76 epochs at the time of these tests). No adapter
+code change was needed or made for this issue; it's a candidate for re-evaluation once the
+100K-step training extension (S7a) finishes, to see whether more training teaches the model to
+predict larger, more decisive orientation corrections. The diagnostic hooks
+(`LEROBOT_DEBUG_ORIENTATION`, `LEROBOT_DEBUG_ORIENT_INFLATE`) are left in `lerobot_policy.py`,
+gated behind env vars with no effect by default, for future re-investigation.
+
+## 8. Training chain stalled after session interruption — made self-perpetuating (2026-08-23)
+
+Both chains silently stopped: MolmoAct2 at step 20500, VLA-JEPA at step 32500 (`checkpoints/last`
+in each `outputs/ur5e_*` dir), with no job in the queue for either. Root cause: the chain-topper
+from section 7a was a `Monitor`-based background loop tied to the Claude Code session. A batch of
+background tasks (including that loop) got marked "stopped" with no completion record after a
+session interruption/restart — SLURM `--dependency=afterany` only delays an *already-submitted*
+job, it doesn't create new ones, so once the last already-queued job for each model finished,
+nothing was left to submit the next link.
+
+**Fixed at the root: made the chain self-perpetuating instead of externally watched.** Both
+`train_ur5e_molmoact2.sh` and `train_ur5e_vla_jepa.sh` now `sbatch` their own next invocation as
+the last thing they do, running on the compute node as part of the SLURM job itself — independent
+of whether any Claude Code session is alive. Resubmit criterion is "did the checkpoint step count
+advance between the start and end of this run" (not "did the process exit 0"): the single most
+common reason to need the next link is gpuq's 7h walltime cap killing the job mid-training via
+SIGTERM, which is *not* a clean exit and must still chain. Only refuses to resubmit when the step
+count didn't move at all (catches a real immediate failure, e.g. crashing before the first
+checkpoint save, without burning the account's `MaxSubmit=10` quota on an infinite failure loop).
+The old session-side watcher loop is no longer relied on (it can still act as a secondary
+backstop for the rare case where self-resubmission itself fails, e.g. hitting the account's
+submit cap at that exact instant, but it is not the primary mechanism anymore).
+
+Resumed both chains manually from where they stalled: MolmoAct2 (job 536586, from step 20500) and
+VLA-JEPA (job 536587, from step 32500), both re-targeting 100,000 steps, both confirmed resuming
+cleanly.
+
+**Also suppressed wandb log noise**: every resume reloads the base/checkpoint weights from
+scratch, each time re-emitting `transformers`' `tqdm(..., desc="Loading weights")` bar
+(`core_model_loading.py`) into the wandb-captured output log — increasingly noisy given how many
+resume segments this chain now involves. `transformers`' tqdm wrapper is gated by
+`huggingface_hub`'s `are_progress_bars_disabled()`, which reads `HF_HUB_DISABLE_PROGRESS_BARS`
+(checked once at `transformers.utils.logging` import time, so it must be set before the
+interpreter starts). Added `export HF_HUB_DISABLE_PROGRESS_BARS=1` to both scripts; confirmed on
+the fresh MolmoAct2 job that the bar no longer appears.

@@ -17,6 +17,8 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite import load_controller_config
 from collections import deque
+import imageio
+from PIL import Image, ImageDraw, ImageFont
 
 
 
@@ -137,7 +139,7 @@ def get_eval_fn(env_name):
         assert NotImplementedError
 
 
-def startup_env(env, variation_id, spawn_region=None):
+def startup_env(env, variation_id, spawn_region=None, num_steps_wait=10):
 
     done, states, images = False, [], []
     states = deque(states, maxlen=1)
@@ -188,8 +190,8 @@ def startup_env(env, variation_id, spawn_region=None):
                 env.sim.data.site_xmat[env.robots[0].eef_site_id], (3, 3))))
             current_gripper_pose = np.concatenate(
                 (current_gripper_position, current_gripper_orientation, np.array([-1])), axis=-1)
-            i = 0   
-            while i < 5:
+            i = 0
+            while i < num_steps_wait:
                 obs, reward, env_done, info = env.step(current_gripper_pose)
                 cv2.imwrite("post_set.jpg", obs['camera_front_image'][:,:, ::-1])
                 i+=1
@@ -203,6 +205,60 @@ def startup_env(env, variation_id, spawn_region=None):
              'picked': False, 'variation_id': variation_id}
     
     return done, states, images, obs, traj, tasks, current_gripper_pose
+
+
+def render_trajectory_video(traj, task_description, video_path, fps=10):
+    """Render `traj`'s front-camera frames (with a task-description overlay) to an mp4.
+
+    Shared by create_video.py's post-hoc batch tool and run_robosuite_eval.py's inline
+    per-trajectory save, so both stay in sync.
+    """
+    first_img = traj[0]['obs']['camera_front_image']
+    height, width, _ = first_img.shape
+
+    with imageio.get_writer(video_path, fps=fps, codec='libx264') as writer:
+        for t in range(len(traj) - 1):
+            img = traj[t]['obs']['camera_front_image']
+            img_pil = Image.fromarray(img).convert("RGBA")
+
+            try:
+                font = ImageFont.truetype("arial.ttf", 14)
+            except Exception:
+                font = ImageFont.load_default(size=14)
+
+            overlay = Image.new("RGBA", img_pil.size, (0, 0, 0, 0))
+            draw = ImageDraw.Draw(overlay)
+
+            text_bg_padding = 6
+            corner_radius = 8
+            shadow_offset = (3, 3)
+            bottom_margin = 10
+            right_margin = 10
+
+            display_text = task_description.replace(" and ", " and\n", 1)
+
+            bbox = draw.multiline_textbbox((0, 0), display_text, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+
+            text_position = (
+                width - text_width - 2 * text_bg_padding - right_margin,
+                height - text_height - 2 * text_bg_padding - bottom_margin,
+            )
+
+            rect_start = (text_position[0] - text_bg_padding, text_position[1] - text_bg_padding)
+            rect_end = (text_position[0] + text_width + text_bg_padding, text_position[1] + text_height + text_bg_padding)
+
+            shadow_start = (rect_start[0] + shadow_offset[0], rect_start[1] + shadow_offset[1])
+            shadow_end = (rect_end[0] + shadow_offset[0], rect_end[1] + shadow_offset[1])
+
+            draw.rounded_rectangle([shadow_start, shadow_end], radius=corner_radius, fill=(0, 0, 0, 120))
+            draw.rounded_rectangle([rect_start, rect_end], radius=corner_radius, fill=(0, 0, 0, 200))
+            draw.multiline_text(text_position, display_text, fill=(255, 255, 255, 255), font=font)
+
+            img_pil = Image.alpha_composite(img_pil, overlay).convert("RGB")
+
+            writer.append_data(np.array(img_pil))
 
 
 def check_pick(threshold: float, obj_z: float, start_z: float, reached: bool, picked: bool):

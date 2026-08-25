@@ -29,8 +29,24 @@ export PYOPENGL_PLATFORM=egl
 CONFIG=${1:-models/lerobot_molmoact2_eval_config.yml}
 POLICY_PATH=${2:-/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/lerobot/lerobot/outputs/ur5e_molmoact2/checkpoints/last/pretrained_model}
 PORT=${3:-8765}
-RUN_NUMBER=${RUN_NUMBER:-0}
-NUM_TRIALS_PER_TASK=${NUM_TRIALS_PER_TASK:-10}
+RUN_NUMBER=${4:-0}
+NUM_TRIALS_PER_TASK=${5:-1}
+
+echo "CONFIG: ${CONFIG}"
+echo "POLICY_PATH: ${POLICY_PATH}"
+echo "PORT: ${PORT}"
+echo "RUN_NUMBER: ${RUN_NUMBER}"
+echo "NUM_TRIALS_PER_TASK: ${NUM_TRIALS_PER_TASK}"
+
+# Resolve any `checkpoints/last` symlink in POLICY_PATH to its concrete target NOW, once, rather
+# than leaving the literal "last" path threaded through the rest of this run. `last` is a
+# symlink the training job keeps advancing — if left unresolved, both the server (weights loaded
+# once at startup, so a mid-run flip doesn't affect it) and the client (which re-derives its
+# rollout save_path from model_config.model_path on every trajectory write, so a mid-run flip
+# does affect it) end up racing a checkpoint step that can move out from under them mid-run.
+# Confirmed empirically: a client write crashed with FileNotFoundError partway through a run
+# because `last` had advanced to a new step whose rollout subdirectory was never created.
+POLICY_PATH=$(readlink -f "${POLICY_PATH}" 2>/dev/null || echo "${POLICY_PATH}")
 
 cd "${SLURM_SUBMIT_DIR:-$(dirname "$0")}"
 
@@ -71,7 +87,8 @@ srun python run_robosuite_eval.py \
     --task_suite_name "ur5e_pick_place_delta_all" \
     --run_number "${RUN_NUMBER}" \
     --change_spawn_regions false \
-    --num_trials_per_task "${NUM_TRIALS_PER_TASK}"
+    --num_trials_per_task "${NUM_TRIALS_PER_TASK}" \
+    --model_config.model_path="${POLICY_PATH}"
 CLIENT_EXIT=$?
 
 kill "${SERVER_PID}" 2>/dev/null

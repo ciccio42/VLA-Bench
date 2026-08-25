@@ -65,6 +65,7 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                         env=env,
                         variation_id=variation_id,
                         spawn_region=spawn_region,
+                        num_steps_wait=cfg.num_steps_wait,
                         )
     done, states, images, obs, traj, tasks, current_gripper_pose = start_up_env_return
     
@@ -138,14 +139,14 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
 
         for indx, action_world in enumerate(action_world_chunk):
             print(f"\n---- Predicted gripper {action_world[6]} ----")
-            if not gripper_closed and round(action_world[6], 2) > 0.75:#0.9:
+            if not gripper_closed and round(action_world[6], 5) >= 0.99: #0.75:#0.9:
                 # action_world[2] = action[2] - 0.05
                 action_world[6] = 1.0
-            elif not gripper_closed and round(action_world[6], 2) < 0.75:
+            elif not gripper_closed and round(action_world[6], 5) < 0.99:#0.75:
                 action_world[6] = -1.0
-            elif gripper_closed and round(action_world[6], 2) < 0.5: #0.0:
+            elif gripper_closed and round(action_world[6], 5) < 0.5: #0.0:
                 action_world[6] = -1.0
-            elif gripper_closed and round(action_world[6], 2) >= 0.5:
+            elif gripper_closed and round(action_world[6], 5) >= 0.5:
                 action_world[6] = 1.0
 
             # avoid too strong gripper orientation changes
@@ -194,6 +195,8 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                         action_world[6] = -1.0
                         # action_world[6] = 1.0
                         obs, reward, env_done, info = env.step(action_world)
+                        for i in range(10):
+                            obs, reward, env_done, info = env.step(action_world)
                 else:
                     obs, reward, env_done, info = env.step(action_world)
                     #print(f"Reward: {reward}, Env done: {env_done}")

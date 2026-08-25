@@ -1,4 +1,5 @@
 import base64
+import os
 import time
 
 import cv2
@@ -7,6 +8,7 @@ import requests
 from robosuite.utils.transform_utils import mat2euler, quat2mat
 
 from .configs import LeRobotPolicyConfig
+from robosuite_utils import TASK_CROP
 
 # Both constants copied from openvla_utils.py verbatim, not reimported (that module has an
 # unconditional `import tensorflow`, unavailable in this conda env — see euler_to_axis_angle
@@ -76,6 +78,10 @@ class lerobot_remote_policy:
         self.chunk_size = cfg.chunk_size
         # fail fast if the server isn't up yet, rather than timing out on the first real request
         requests.get(f"http://127.0.0.1:{cfg.server_port}/", timeout=10)
+        # Roll/pitch of the gripper-frame orientation at each episode's first step (n_steps==0),
+        # captured fresh per episode in compute_action below — see the perpendicular-to-table
+        # lock there for why.
+        self._table_perpendicular_roll_pitch = None
 
     def _encode_image(self, img: np.ndarray) -> str:
         ok, buf = cv2.imencode(".png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
@@ -93,9 +99,28 @@ class lerobot_remote_policy:
 
     def compute_action(self, obs, resize_size, gripper_closed, task_description, task_name="pick_place", n_steps=-1):
         start = time.time()
+        if isinstance(resize_size, int):
+            resize_size = (resize_size, resize_size)
+
+        # Sim's raw front-camera render has a wider FOV than the real UR5e camera the dataset
+        # was collected on, so it needs the same TASK_CROP crop-then-resize openvla.py/tinyvla.py
+        # apply before feeding a model trained on that dataset — otherwise the model sees a
+        # framing it never saw in training. The wrist/gripper camera's raw sim FOV already
+        # matches the real one closely enough that only a resize (no crop) is needed, same as
+        # those two model families.
+        front_image = obs["camera_front_image"]
+        crop_params = TASK_CROP[task_name]
+        top, left = crop_params[0], crop_params[2]
+        img_height, img_width = front_image.shape[0], front_image.shape[1]
+        box_h, box_w = img_height - top - crop_params[1], img_width - left - crop_params[3]
+        front_image = front_image[top : top + box_h, left : left + box_w]
+        front_image = cv2.resize(front_image, resize_size[::-1], interpolation=cv2.INTER_LINEAR)
+
+        gripper_image = cv2.resize(obs["robot0_eye_in_hand_image"], resize_size[::-1], interpolation=cv2.INTER_LINEAR)
+
         images = {
-            "front": obs["camera_front_image"],
-            "gripper": obs["robot0_eye_in_hand_image"],
+            "front": front_image,
+            "gripper": gripper_image,
         }
         payload = {
             "images": {k: self._encode_image(v) for k, v in images.items()},
@@ -117,12 +142,39 @@ class lerobot_remote_policy:
             delta[6] = delta[6] * SCALE_FACTOR
         elapsed = time.time() - start
 
+        # Temporary diagnostic: is the controller/wrapper even capable of executing a
+        # deliberate, large orientation change, or is real orientation stuck regardless of
+        # commanded magnitude? Multiplies the (already-scaled) orientation delta by a large
+        # constant sign-preserving factor so a genuine, easily-visible rotation should occur
+        # within a handful of steps if the pipeline can track orientation commands at all.
+        # See LEROBOT_EVAL.md's orientation investigation.
+        inflate = float(os.environ.get("LEROBOT_DEBUG_ORIENT_INFLATE", "1"))
+        if inflate != 1.0:
+            delta[3:6] = delta[3:6] * inflate
+
         action_world = np.zeros(7)
         action_world[0:3] = obs["eef_pos"] + delta[0:3]
         current_euler = gripper_frame_euler(obs["eef_quat"])
         target_euler = [normalize_angle(a) for a in (current_euler + delta[3:6])]
+
+        # Keep the gripper perpendicular to the table: pick_place resets each episode to a
+        # top-down pose, so roll/pitch at n_steps==0 IS "perpendicular" — lock the commanded
+        # roll/pitch to that reference every step instead of letting predicted droll/dpitch
+        # accumulate (per LEROBOT_EVAL.md's orientation investigation, those predicted deltas are
+        # real but tiny/jittery, not a deliberate correction, so left unlocked they only add
+        # noise). Yaw is left free since that's the DOF that matters for aligning the grasp with
+        # the object.
+        if n_steps == 0 or self._table_perpendicular_roll_pitch is None:
+            self._table_perpendicular_roll_pitch = (current_euler[0], current_euler[1])
+        target_euler[0], target_euler[1] = self._table_perpendicular_roll_pitch
+
         action_world[3:6] = euler_to_axis_angle(target_euler)
         action_world[6] = delta[6]
+
+        if os.environ.get("LEROBOT_DEBUG_ORIENTATION"):
+            print(f"[ORIENT_DEBUG] scaled delta[3:6] (droll,dpitch,dyaw): {delta[3:6]}")
+            print(f"[ORIENT_DEBUG] current_euler (real, from obs['eef_quat']): {np.array(current_euler)}")
+            print(f"[ORIENT_DEBUG] target_euler (commanded): {np.array(target_euler)}")
 
         # Single-action chunk: re-query the server every env step, exactly like lerobot-eval's own
         # rollout() does. Simpler and safer than replicating LeRobot's internal action-queue

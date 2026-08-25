@@ -170,6 +170,7 @@ def eval_robosuite(cfg: EvalConfig) -> float:
         
         if cfg.save:
             pkl.dump(traj, open(os.path.join(save_path, f"traj_{ctr}.pkl"), "wb"))
+            render_trajectory_video(traj, task_description, os.path.join(save_path, f"traj_{ctr}.mp4"))
         
         # Save info
         with open(os.path.join(save_path, f"info_{ctr}.json"), "w") as f:
