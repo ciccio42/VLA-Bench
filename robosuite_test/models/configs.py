@@ -81,8 +81,25 @@ class LeRobotPolicyConfig(ModelConfig):
     task_suite_name: str = ''
     otd: bool = False
     use_cosmos_name: bool = False
+    model_cosmos_name: str = "nvidia/Cosmos-Reason2-8B"  # Cosmos name of the model
+    model_cosmos_port: int = 8000          # Port where the vLLM server is running
     dataset_path: str = ''
 
+
+@ModelConfig.register_subclass('mimic_video')
+@dataclass
+class MimicVideoConfig(ModelConfig):
+    # Talks to mimic_video_policy_server.py (mimic-video/model/scripts/) over HTTP -- see
+    # VLA-Benchmark/robosuite_test/models/mimic_video_policy.py and run_mimic_video_eval.sh.
+    model_path: str = ""          # world2action checkpoint dir the server was started with (for logging/save_path only)
+    server_port: int = 8767
+    chunk_size: int = 15
+    task_suite_name: str = ''
+    otd: bool = False
+    use_cosmos_name: bool = False
+    model_cosmos_name: str = "nvidia/Cosmos-Reason2-8B"  # Cosmos name of the model
+    model_cosmos_port: int = 8000          # Port where the vLLM server is running
+    dataset_path: str = ''
 
 
 @dataclass

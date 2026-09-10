@@ -10,7 +10,7 @@
 
 sbatch run_lerobot_eval.sh \
         models/lerobot_molmoact2_eval_config.yml \
-        /mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/lerobot/lerobot/outputs/ur5e_molmoact2/checkpoints/045500/pretrained_model \
+        /mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/lerobot/lerobot/outputs/ur5e_molmoact2_bsz16/checkpoints/032000/pretrained_model\
         8765 \
         0 \
         10

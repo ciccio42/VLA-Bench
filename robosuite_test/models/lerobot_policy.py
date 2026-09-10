@@ -116,8 +116,11 @@ class lerobot_remote_policy:
         front_image = front_image[top : top + box_h, left : left + box_w]
         front_image = cv2.resize(front_image, resize_size[::-1], interpolation=cv2.INTER_LINEAR)
 
-        gripper_image = cv2.resize(obs["robot0_eye_in_hand_image"], resize_size[::-1], interpolation=cv2.INTER_LINEAR)
-
+        # gripper_image = cv2.resize(obs["robot0_eye_in_hand_image"], resize_size[::-1], interpolation=cv2.INTER_LINEAR)
+        #  cv2.flip(obs['eye_in_hand_image'], 1)
+        eye_in_hand = cv2.flip(obs['eye_in_hand_image'], 1) 
+        gripper_image = cv2.resize(eye_in_hand, resize_size[::-1], interpolation=cv2.INTER_LINEAR)
+        
         images = {
             "front": front_image,
             "gripper": gripper_image,

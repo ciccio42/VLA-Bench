@@ -81,6 +81,10 @@ MODEL_IMAGE_SIZES = {
     # Add other models as needed
     "tinyvla": 224,
     "lerobot": 224,
+    # Unused by mimic_video_policy.compute_action (the server always letterboxes+resizes to its
+    # own fixed 640x480 internally) -- present only because get_image_resize_size() requires an
+    # entry for every model_family.
+    "mimic_video": 224,
 }
 
 # Set up logging

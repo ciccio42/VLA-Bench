@@ -10,7 +10,7 @@
 
 sbatch run_lerobot_eval.sh \
         models/lerobot_vla_jepa_eval_config.yml \
-        /mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/lerobot/lerobot/outputs/ur5e_vla_jepa/checkpoints/045500/pretrained_model \
+        /mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/lerobot/lerobot/outputs/ur5e_vla_jepa_bsz16/checkpoints/032000/pretrained_model \
         8766 \
         0 \
-        1
+        10

@@ -16,7 +16,7 @@
 # `lerobot` env, waits for it to become healthy, then runs the usual robosuite client against
 # it in this repo's own env.
 #
-# Usage: sbatch run_lerobot_eval.sh [config_yml] [policy_path] [port]
+# Usage: sbatch run_lerobot_eval.sh [config_yml] [policy_path] [port] [run_number] [num_trials_per_task] [task_suite_name] [otd] [object_set]
 
 set -uo pipefail
 
@@ -31,6 +31,19 @@ POLICY_PATH=${2:-/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/lerobot/lerobot
 PORT=${3:-8765}
 RUN_NUMBER=${4:-0}
 NUM_TRIALS_PER_TASK=${5:-1}
+# Defaults match this script's previous hardcoded values, so existing callers (run_lerobot_vla_jepa.sh,
+# run_lerobot_molmoact2.sh) are unaffected.
+TASK_SUITE_NAME=${6:-ur5e_pick_place_delta_all}
+OTD=${7:-false}
+OBJECT_SET=${8:--1}
+
+# Optional Cosmos-generated task descriptions (nvidia/Cosmos-Reason2-8B via a separately
+# launched vLLM server, see Video-Captioning-Human-Demo/vllm/run_vllm.sh + vllm_utils.py).
+# Off by default -- set USE_COSMOS_NAME=true to enable for a given run.
+USE_COSMOS_NAME=${USE_COSMOS_NAME:-false}
+MODEL_COSMOS_NAME=${MODEL_COSMOS_NAME:-nvidia/Cosmos-Reason2-8B}
+MODEL_COSMOS_PORT=${MODEL_COSMOS_PORT:-8000}
+DATASET_PATH=${DATASET_PATH:-/mnt/beegfs/frosa/robot_datasets/dataset/no_opt_dataset}
 
 echo "CONFIG: ${CONFIG}"
 echo "POLICY_PATH: ${POLICY_PATH}"
@@ -82,13 +95,28 @@ echo "Server is healthy."
 
 # --- run the robosuite client in the benchmark's (Python 3.9) env ---
 export PATH=/mnt/beegfs/frosa/.conda/envs/tinyvla_robosuite_1_0_1_provola/bin:$PATH
+COSMOS_ARGS=()
+if [ "${USE_COSMOS_NAME}" = "true" ]; then
+    COSMOS_ARGS=(
+        --model_config.use_cosmos_name=true
+        --model_config.model_cosmos_name="${MODEL_COSMOS_NAME}"
+        --model_config.model_cosmos_port="${MODEL_COSMOS_PORT}"
+        --model_config.dataset_path="${DATASET_PATH}"
+    )
+fi
 srun python run_robosuite_eval.py \
     --config_path="${CONFIG}" \
-    --task_suite_name "ur5e_pick_place_delta_all" \
+    --task_suite_name "${TASK_SUITE_NAME}" \
     --run_number "${RUN_NUMBER}" \
     --change_spawn_regions false \
+    --object_set "${OBJECT_SET}" \
     --num_trials_per_task "${NUM_TRIALS_PER_TASK}" \
-    --model_config.model_path="${POLICY_PATH}"
+    --model_config.model_path="${POLICY_PATH}" \
+    --model_config.server_port="${PORT}" \
+    --model_config.task_suite_name="${TASK_SUITE_NAME}" \
+    --model_config.otd="${OTD}" \
+    "${COSMOS_ARGS[@]}"
+    # --debug true
 CLIENT_EXIT=$?
 
 kill "${SERVER_PID}" 2>/dev/null

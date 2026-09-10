@@ -137,12 +137,21 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                                 task_name = task_name,
                                 n_steps = n_steps)
 
+        # Visual-debug test (mimic-video only, no-op for other model families): overlay the
+        # predicted world-frame action chunk on the raw camera frame -- see
+        # mimic_video_policy.py's debug_plot_predicted_actions docstring.
+        if hasattr(policy, "debug_plot_predicted_actions"):
+            policy.debug_plot_predicted_actions(
+                env=env,
+                save_path=os.path.join("images", f"debug_predicted_actions_step{n_steps:03d}.png"),
+            )
+
         for indx, action_world in enumerate(action_world_chunk):
             print(f"\n---- Predicted gripper {action_world[6]} ----")
-            if not gripper_closed and round(action_world[6], 5) >= 0.99: #0.75:#0.9:
+            if not gripper_closed and round(action_world[6], 5) > 0.95: #0.99:#0.75:#0.9:
                 # action_world[2] = action[2] - 0.05
                 action_world[6] = 1.0
-            elif not gripper_closed and round(action_world[6], 5) < 0.99:#0.75:
+            elif not gripper_closed and round(action_world[6], 5) < 0.95:#0.99:#0.75:
                 action_world[6] = -1.0
             elif gripper_closed and round(action_world[6], 5) < 0.5: #0.0:
                 action_world[6] = -1.0

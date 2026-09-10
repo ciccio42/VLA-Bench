@@ -34,10 +34,10 @@ def eval_robosuite(cfg: EvalConfig) -> float:
     otd = bool(getattr(cfg.model_config, "otd", False))
     
     # Set random seed
-    if 'rm_12_13_14_15' in cfg.task_suite_name:
-        set_seed_everywhere(0)
-    else:        
-        set_seed_everywhere(cfg.seed)
+    # if 'rm_12_13_14_15' in cfg.task_suite_name:
+    #     set_seed_everywhere(0)
+    # else:        
+    set_seed_everywhere(cfg.seed)
     # Setup logging
     log_file, local_log_filepath, run_id = setup_logging(cfg)
     # Get expected image dimensions
@@ -72,6 +72,11 @@ def eval_robosuite(cfg: EvalConfig) -> float:
         from robosuite_test.models.lerobot_policy import lerobot_remote_policy
         print(f"Running LeRobot policy evaluation....")
         policy = lerobot_remote_policy(cfg.model_config)
+
+    elif cfg.model_family.lower() == "mimic_video":
+        from robosuite_test.models.mimic_video_policy import mimic_video_remote_policy
+        print(f"Running mimic-video (world2action) policy evaluation....")
+        policy = mimic_video_remote_policy(cfg.model_config)
 
     
     # # Initialize Robosuite environment
