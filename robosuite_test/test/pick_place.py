@@ -68,7 +68,17 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                         num_steps_wait=cfg.num_steps_wait,
                         )
     done, states, images, obs, traj, tasks, current_gripper_pose = start_up_env_return
-    
+
+    # Clears mimic_video_policy's rolling image-history buffer of any frames left over from a
+    # previous episode (the policy object -- and its buffer -- is shared across every trial in
+    # an eval run, see run_robosuite_eval.py), then seeds it with this episode's very first
+    # frame, before the first compute_action() call below consumes it (both are no-ops for other
+    # model families -- see reset()/observe()'s own docstrings for why these hooks exist).
+    if hasattr(policy, "reset"):
+        policy.reset()
+    if hasattr(policy, "observe"):
+        policy.observe(obs, task_name=task_name)
+
     img = Image.fromarray(obs['camera_front_image'])
     # img.save("first_frame.jpg")
     
@@ -147,38 +157,46 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
             )
 
         for indx, action_world in enumerate(action_world_chunk):
-            print(f"\n---- Predicted gripper {action_world[6]} ----")
+            # print(f"\n---- Predicted gripper {action_world[6]} ----")
             if not gripper_closed and round(action_world[6], 5) > 0.95: #0.99:#0.75:#0.9:
+                print(f"Gripper is open, but predicted gripper is {action_world[6]}. Closing gripper.")
                 # action_world[2] = action[2] - 0.05
                 action_world[6] = 1.0
+                gripper_closed = 1.0
             elif not gripper_closed and round(action_world[6], 5) < 0.95:#0.99:#0.75:
+                print(f"Gripper is open, but predicted gripper is {action_world[6]}. Opening gripper.")
                 action_world[6] = -1.0
-            elif gripper_closed and round(action_world[6], 5) < 0.5: #0.0:
+                gripper_closed = 0.0
+            elif gripper_closed and round(action_world[6], 5) < 0.02: #0.5
+                print(f"Gripper is closed, but predicted gripper is {action_world[6]}. Opening gripper.")
                 action_world[6] = -1.0
-            elif gripper_closed and round(action_world[6], 5) >= 0.5:
+                gripper_closed = 0.0
+            elif gripper_closed and round(action_world[6], 5) >= 0.02: #0.5
+                print(f"Gripper is closed, but predicted gripper is {action_world[6]}. Closing gripper.")
                 action_world[6] = 1.0
+                gripper_closed = 1.0
 
-            # avoid too strong gripper orientation changes
-            if n_steps > 0:
-                previous_gripper_orientation_action = previous_action[3:6]
-                current_gripper_orientation_action = action_world[3:6]
-                
-                # check if the gripper state changed
-                if action_world[6] != previous_action[6]:
-                    gripper_state_changed = True
-                else:
-                    gripper_state_changed = False
-                    
-                previous_action[6] = action_world[6]
-                
-                if (abs(previous_gripper_orientation_action[0] - current_gripper_orientation_action[0]) > 2.0 or abs(previous_gripper_orientation_action[1] - current_gripper_orientation_action[1]) > 2.0 or abs(previous_gripper_orientation_action[2] - current_gripper_orientation_action[2]) > 2.0):
-                    action_world[3:6] = previous_gripper_orientation_action
-                else:
-                    previous_action = action_world.copy()
-                    
+            # check if the gripper state changed
+            if n_steps > 0 and action_world[6] != previous_action[6]:
+                gripper_state_changed = True
             else:
                 gripper_state_changed = False
-                previous_action = action_world.copy()
+            previous_action = action_world.copy()
+
+            # Grasp-offset debug instrumentation (2026-09-22): log the RAW commanded position and
+            # the object's true position at the exact instant the gripper-close decision fires,
+            # before any of the open/close maneuver's intermediate env.step() calls run. A prior
+            # attempt at a fixed y-offset used a delta measured from the post-maneuver saved
+            # trajectory (obj_to_robot0_eef_pos at the logged "close" step) instead of this
+            # decision-time value, and made picking worse (87.5%->68.75%) -- this print exists to
+            # get a clean, uncontaminated measurement before trying that again.
+            if gripper_state_changed and action_world[6] == 1.0:
+                obj_pos_now = obs[obj_key]
+                eef_pos_now = obs['eef_pos']
+                print(f"[GRASP-DEBUG] step {n_steps}: raw action_world[:3]={action_world[:3].tolist()}, "
+                      f"eef_pos={eef_pos_now.tolist()}, obj_pos={obj_pos_now.tolist()}, "
+                      f"obj-vs-commanded_target={list(obj_pos_now - action_world[:3])}, "
+                      f"obj-vs-current_eef={list(obj_pos_now - eef_pos_now)}")
 
             try:
                 # current_gripper_orientation = T.quat2axisangle(T.mat2quat(np.reshape(
@@ -190,11 +208,41 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                 if gripper_state_changed:
                     if action_world[6] == 1.0:
                         action_world[6] = -1.0
-                        action_world[2] -= 0.03  # move down before closing the gripper
-                        obs, reward, env_done, info = env.step(action_world)
+                        if not hasattr(policy, "observe"):
+                            # Tried a +0.02 y-offset here on 2026-09-22 based on a measured median
+                            # obj-eef y delta of +0.021m at the grasp transition (delta_all/step21000,
+                            # 16 trials). Result: made things WORSE (picked 87.5%->68.75%, success
+                            # 81.25%->50%, 5 pick failures instead of 2, new placement failures too) --
+                            # reverted. The obj_to_robot0_eef_pos delta measured at the logged "close
+                            # event" step reflects state AFTER several intermediate closing-maneuver
+                            # env.step() calls, not the raw action_world position actually commanded at
+                            # decision time, so it doesn't safely translate into a correction here.
+                            #
+                            # Re-measured properly on 2026-09-22 via the GRASP-DEBUG print above, which
+                            # captures obj_pos - action_world[:3] (the raw commanded target) at the exact
+                            # decision-time step, uncontaminated by the maneuver. Across a fresh 16-trial
+                            # run (job 567665) the dominant, consistent bias is on x (mean -0.0138m,
+                            # 14/16 trials negative -- the commanded target consistently overshoots past
+                            # the object in x), while y is small and mixed-sign (mean +0.0032m, not
+                            # systematic). Both pick failures in that run had the largest x deltas
+                            # (-0.043, -0.027) with near-zero/mixed y error, reinforcing x as the real
+                            # driver. Applying the mean x correction here.
+                            action_world[0] -= 0.014
+                            obs, reward, env_done, info = env.step(action_world)
+                        else:
+                            pass
+                            #action_world[0] += 0.05
+                            # move the gripper a bit forward and on the left
+                            # action_world[0] += 0.05
+                            # action_world[1] -= 0.05
+                            #action_world[0] += 0.02
+                            #action_world[1] += 0.02
                         action_world[6] = 1.0
                         obs, reward, env_done, info = env.step(action_world)
-                        for i in range(10):
+                        if not hasattr(policy, "observe"):
+                            for i in range(10):
+                                obs, reward, env_done, info = env.step(action_world)
+                        else:
                             obs, reward, env_done, info = env.step(action_world)
                         # action_world[2] += 0.05  # move up after closing the gripper
                         
@@ -222,6 +270,13 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                 tasks['success'] = 0
                 break
         
+            # Feeds mimic_video_policy's rolling image-history buffer with every real frame this
+            # chunk passes through, not just the frame at the moment compute_action() is next
+            # called -- see mimic_video_policy.py's observe() docstring. No-op for other model
+            # families.
+            if hasattr(policy, "observe"):
+                policy.observe(obs, task_name=task_name)
+
             image_step = obs['camera_front_image']
             image_step = Image.fromarray(image_step)
             # image_step.save("step.jpg")

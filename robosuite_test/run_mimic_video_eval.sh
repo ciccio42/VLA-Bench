@@ -28,10 +28,10 @@ export MUJOCO_GL=egl
 export PYOPENGL_PLATFORM=egl
 
 CONFIG=${1:-models/mimic_video_eval_config.yml}
-CHECKPOINT_DIR=${2:-/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/mimic-video/model/checkpoints/vam/ur5e/w2a_ur5e_pick_place_lr1.000e-04_layer20_bsz16_train}
+CHECKPOINT_DIR=${2:-/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/mimic-video/model/checkpoints/vam/ur5e/w2a_ur5e_pick_place_lr1.000e-04_layer20_bsz16_rawscale_train}
 PORT=${3:-8767}
-RUN_NUMBER=${4:-0}
-NUM_TRIALS_PER_TASK=${5:-1}
+RUN_NUMBER=${4:-1}
+NUM_TRIALS_PER_TASK=${5:-10}
 
 echo "CONFIG: ${CONFIG}"
 echo "CHECKPOINT_DIR: ${CHECKPOINT_DIR}"
@@ -82,8 +82,7 @@ srun --gres=gpu:1 python run_robosuite_eval.py \
     --change_spawn_regions false \
     --num_trials_per_task "${NUM_TRIALS_PER_TASK}" \
     --model_config.model_path="${CHECKPOINT_DIR}" \
-    --model_config.server_port="${PORT}" \
-    --debug true
+    --model_config.server_port="${PORT}"
 CLIENT_EXIT=$?
 
 kill "${SERVER_PID}" 2>/dev/null

@@ -53,8 +53,8 @@ TASK_VARIATION_DICT = {
 # Define max steps for each task suite
 TASK_MAX_STEPS = {
     TaskSuite.PICK_PLACE: 200,
-    TaskSuite.PICK_PLACE_ABS_POSE: 220, 
-    TaskSuite.PICK_PLACE_DELTA_ALL: 220,
+    TaskSuite.PICK_PLACE_ABS_POSE: 200, 
+    TaskSuite.PICK_PLACE_DELTA_ALL: 200,
     TaskSuite.PICK_PLACE_DELTA_REMOVED_0_5_10_15: 130,
     TaskSuite.PICK_PLACE_REMOVED_SPAWN_REGIONS_DELTA_ALL: 130,
     TaskSuite.PICK_PLACE_RM_ONE_SPAWN: 130,
@@ -85,6 +85,10 @@ MODEL_IMAGE_SIZES = {
     # own fixed 640x480 internally) -- present only because get_image_resize_size() requires an
     # entry for every model_family.
     "mimic_video": 224,
+    # Unused by interleave_vla_remote_policy.compute_action (the client builds its own
+    # front/target_crop/bin_grounding images at 224x224 to match training) -- present only
+    # because get_image_resize_size() requires an entry for every model_family.
+    "interleave_vla": 224,
 }
 
 # Set up logging

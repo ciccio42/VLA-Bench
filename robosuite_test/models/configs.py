@@ -86,6 +86,28 @@ class LeRobotPolicyConfig(ModelConfig):
     dataset_path: str = ''
 
 
+@ModelConfig.register_subclass('interleave_vla')
+@dataclass
+class InterleaveVLAConfig(ModelConfig):
+    # Talks to interleave_vla_policy_server.py (open-pi-zero/scripts/) over HTTP -- see
+    # VLA-Benchmark/robosuite_test/models/interleave_vla_policy.py and run_interleave_vla_eval.sh.
+    model_path: str = ""          # Interleave-pi0 checkpoint (.pt) the server was started with (for logging/save_path only)
+    server_port: int = 8766
+    chunk_size: int = 1
+    sim_camera_config_path: str = (
+        "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/Multi-Task-LFD-Training-Framework/"
+        "tasks/multi_task_robosuite_env/config/PickPlaceDistractor.yaml"
+    )
+    task_suite_name: str = ''
+    otd: bool = False
+    use_cosmos_name: bool = False
+    model_cosmos_name: str = "nvidia/Cosmos-Reason2-8B"  # Cosmos name of the model
+    model_cosmos_port: int = 8000          # Port where the vLLM server is running
+    dataset_path: str = ''
+    debug_save_images: bool = False        # Dump the preprocessed front image (+ instruction overlay) per step
+    debug_image_dir: str = "./debug_interleave_images"
+
+
 @ModelConfig.register_subclass('mimic_video')
 @dataclass
 class MimicVideoConfig(ModelConfig):

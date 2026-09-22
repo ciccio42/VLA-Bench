@@ -1,5 +1,6 @@
 import base64
 import time
+from collections import deque
 
 import cv2
 import numpy as np
@@ -13,6 +14,17 @@ from .configs import MimicVideoConfig
 # (uniform scale + black-pad, applied directly to the dataset's raw camera frames). Replicated
 # here so the eval-time frame goes through the identical operation.
 VIDEO_SIZE = (320, 240)
+
+# The world2action action head was trained on video-conditioning embeddings precomputed by
+# mimic-video/scripts/run_precompute_video_embeddings.sh with `--obs-history 5 --data-fps 10`:
+# every query the action head ever saw during its own training was conditioned on 5 real frames
+# spaced at the training data's native 10Hz, never a single static frame (video2world's own
+# pretraining randomizes 1-vs-5-frame conditioning, but the action DiT cross-attending into it
+# was always trained against the 5-frame flavor -- see world2action_model.py/dataset_video.py).
+# This robosuite env's control_freq is 20Hz (mimic_video_policy_server.py's x2 hold-repeat
+# comment), so every other captured frame (stride 2) reconstructs that same 10Hz/5-frame window.
+IMAGE_HISTORY_STRIDE = 2
+IMAGE_HISTORY_LEN = 5
 
 
 def resize_with_padding(frame: np.ndarray, output_size: tuple = VIDEO_SIZE) -> np.ndarray:
@@ -54,13 +66,17 @@ class mimic_video_remote_policy:
         # caller doesn't have to re-thread obs/action_world_chunk through itself just to debug.
         self._last_debug_obs = None
         self._last_debug_action_world_chunk = None
+        # Rolling buffer of preprocessed frames, fed by observe() -- see IMAGE_HISTORY_STRIDE's
+        # comment. Sized so that after taking every IMAGE_HISTORY_STRIDE-th entry, IMAGE_HISTORY_LEN
+        # frames remain (same "(horizon-1)*stride+1" sizing eval/libero/run.py's VAMInference uses).
+        self._image_history: deque[np.ndarray] = deque(maxlen=(IMAGE_HISTORY_LEN - 1) * IMAGE_HISTORY_STRIDE + 1)
 
     def _encode_image(self, img: np.ndarray) -> str:
         ok, buf = cv2.imencode(".png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
         assert ok, "failed to encode image as PNG"
         return base64.b64encode(buf.tobytes()).decode("ascii")
 
-    def compute_action(self, obs, resize_size, gripper_closed, task_description, task_name="pick_place", n_steps=-1):
+    def _preprocess_front_image(self, obs, task_name: str) -> np.ndarray:
         # Sim's raw front-camera render has a wider FOV than the real UR5e camera the underlying
         # open_x_embodiment/ur5e_pick_place_delta_all dataset was collected on -- mimic-video was
         # trained on THAT dataset too (preprocessing_pipeline.py converts it into
@@ -68,7 +84,6 @@ class mimic_video_remote_policy:
         # openvla.py/tinyvla.py/lerobot_policy.py apply, before then going through the
         # resize_with_padding letterbox preprocessing_pipeline.py itself applies to get frames
         # into the fixed 4:3 canvas this model was actually trained at.
-        start = time.time()
         front_image = obs["camera_front_image"]
         crop_params = TASK_CROP[task_name]
         top, left = crop_params[0], crop_params[2]
@@ -76,10 +91,44 @@ class mimic_video_remote_policy:
         box_h, box_w = img_height - top - crop_params[1], img_width - left - crop_params[3]
         front_image = front_image[top : top + box_h, left : left + box_w]
         front_image = cv2.resize(front_image, (224, 224), interpolation=cv2.INTER_LINEAR)
-        front_image = resize_with_padding(front_image)
+        return resize_with_padding(front_image)
+
+    def reset(self) -> None:
+        """Clear the rolling image-history buffer at the start of a new episode.
+
+        Without this, the buffer (built once in __init__ and shared across every trial in an
+        eval run -- see run_robosuite_eval.py's policy construction, which happens before its
+        trial loop) keeps whatever frames were left over from the END of the PREVIOUS episode:
+        observe()'s own maxlen-padding only fires while the deque is still filling up, so after
+        episode 1 it's already full and a single post-reset observe() call only evicts one stale
+        frame, leaving up to maxlen-1 of them (a different object pose, possibly a different
+        task) in the very first video-conditioning input the model sees for the new episode.
+        Matches eval/libero/run.py's VAMInference.reset(), which recreates its own deque the
+        same way at every episode boundary.
+        """
+        self._image_history = deque(maxlen=self._image_history.maxlen)
+
+    def observe(self, obs, task_name: str = "pick_place") -> None:
+        """Record one raw env frame into the rolling image-history buffer.
+
+        Unlike compute_action(), which is only invoked once per predicted action chunk (~30 env
+        steps apart), the caller (pick_place.py) calls this on EVERY env.step() -- including the
+        ones spent replaying an already-fetched chunk -- so that by the time the model is next
+        queried, the buffer holds the same kind of real, recently-observed motion the action head
+        was trained on (see IMAGE_HISTORY_STRIDE's comment), not just the single instantaneous
+        frame at query time.
+        """
+        processed = self._preprocess_front_image(obs, task_name)
+        self._image_history.append(processed)
+        while len(self._image_history) < self._image_history.maxlen:
+            self._image_history.append(processed.copy())
+
+    def compute_action(self, obs, resize_size, gripper_closed, task_description, task_name="pick_place", n_steps=-1):
+        start = time.time()
+        frames = list(self._image_history)[::IMAGE_HISTORY_STRIDE]
 
         payload = {
-            "images": {"front": self._encode_image(front_image)},
+            "images": {"front": [self._encode_image(f) for f in frames]},
             "state": {
                 "eef_pos": np.asarray(obs["eef_pos"], dtype=np.float64).tolist(),
                 "eef_quat": np.asarray(obs["eef_quat"], dtype=np.float64).tolist(),
@@ -98,7 +147,7 @@ class mimic_video_remote_policy:
         elapsed = time.time() - start
         self._last_debug_obs = obs
         self._last_debug_action_world_chunk = action_world_chunk
-        return action_world_chunk[:5], elapsed
+        return action_world_chunk, elapsed
 
     @staticmethod
     def _project_point_to_camera_front(point, sim, frame_width, frame_height, camera="camera_front"):

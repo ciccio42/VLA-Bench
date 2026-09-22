@@ -9,8 +9,4 @@
 #SBATCH --export=ALL
 
 sbatch run_mimic_video_eval.sh \
-        models/mimic_video_eval_config.yml \
-        /mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/mimic-video/model/checkpoints/vam/ur5e/w2a_ur5e_pick_place_lr1.000e-04_layer20_bsz16_rotvariance_train \
-        8767 \
-        0 \
-        1
+  

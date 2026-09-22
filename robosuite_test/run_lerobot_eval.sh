@@ -36,6 +36,12 @@ NUM_TRIALS_PER_TASK=${5:-1}
 TASK_SUITE_NAME=${6:-ur5e_pick_place_delta_all}
 OTD=${7:-false}
 OBJECT_SET=${8:--1}
+# Was hardcoded to false below (--change_spawn_regions false), so a spawn-region task suite (e.g.
+# ur5e_pick_place_removed_spawn_regions/_rm_central_spawn) could only ever run its "train spawn
+# region" branch (test/pick_place.py's change_spawn_regions=False case), never the OOD one -- env
+# var so existing positional callers (run_lerobot_vla_jepa.sh, run_lerobot_molmoact2.sh) that don't
+# set it are unaffected.
+CHANGE_SPAWN_REGIONS=${CHANGE_SPAWN_REGIONS:-false}
 
 # Optional Cosmos-generated task descriptions (nvidia/Cosmos-Reason2-8B via a separately
 # launched vLLM server, see Video-Captioning-Human-Demo/vllm/run_vllm.sh + vllm_utils.py).
@@ -50,6 +56,8 @@ echo "POLICY_PATH: ${POLICY_PATH}"
 echo "PORT: ${PORT}"
 echo "RUN_NUMBER: ${RUN_NUMBER}"
 echo "NUM_TRIALS_PER_TASK: ${NUM_TRIALS_PER_TASK}"
+echo "TASK_SUITE_NAME: ${TASK_SUITE_NAME}"
+echo "CHANGE_SPAWN_REGIONS: ${CHANGE_SPAWN_REGIONS}"
 
 # Resolve any `checkpoints/last` symlink in POLICY_PATH to its concrete target NOW, once, rather
 # than leaving the literal "last" path threaded through the rest of this run. `last` is a
@@ -108,7 +116,7 @@ srun python run_robosuite_eval.py \
     --config_path="${CONFIG}" \
     --task_suite_name "${TASK_SUITE_NAME}" \
     --run_number "${RUN_NUMBER}" \
-    --change_spawn_regions false \
+    --change_spawn_regions "${CHANGE_SPAWN_REGIONS}" \
     --object_set "${OBJECT_SET}" \
     --num_trials_per_task "${NUM_TRIALS_PER_TASK}" \
     --model_config.model_path="${POLICY_PATH}" \

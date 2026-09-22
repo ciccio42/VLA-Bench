@@ -1,0 +1,24 @@
+task_suite_name: &tsn ur5e_pick_place_delta_all
+model_family: "interleave_vla"
+num_steps_wait: 10
+num_trials_per_task: 10
+initial_states_path: "DEFAULT"
+env_img_res: 256
+save: true
+local_log_dir: "./experiments/logs"
+use_wandb: false
+seed: 42
+controller_path: "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/VLA-Benchmark/robosuite_test/tasks/multi_task_robosuite_env/controllers/config/osc_pose.json"
+debug: false
+run_number: 0
+change_spawn_regions: false
+change_command: false
+OoD: false
+object_set: -1
+run_id_note: *tsn
+
+model_config:
+  type: interleave_vla
+  model_path: '/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/Interleave-VLA/open-pi-zero/logs/train/PLACEHOLDER/checkpoint/stepNNNN.pt'
+  server_port: 8766
+  task_suite_name: *tsn

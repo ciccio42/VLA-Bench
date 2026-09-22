@@ -78,7 +78,23 @@ def eval_robosuite(cfg: EvalConfig) -> float:
         print(f"Running mimic-video (world2action) policy evaluation....")
         policy = mimic_video_remote_policy(cfg.model_config)
 
-    
+    elif cfg.model_family.lower() == "interleave_vla":
+        from robosuite_test.models.interleave_vla_policy import interleave_vla_remote_policy
+        print(f"Running Interleave-VLA (Interleave-pi0) policy evaluation....")
+        policy = interleave_vla_remote_policy(cfg.model_config)
+
+    # Records which checkpoint iteration produced this run's rollouts (checkpoint_dir is reused
+    # across many training iterations over time -- see mimic_video_policy_server.py's own
+    # resolution of this same file), since info_<ctr>.json otherwise has no way to tell which
+    # model weights generated it.
+    model_checkpoint = None
+    if cfg.model_family.lower() == "mimic_video":
+        latest_ckpt_file = os.path.join(cfg.model_config.model_path, "checkpoints", "latest_checkpoint.txt")
+        if os.path.exists(latest_ckpt_file):
+            with open(latest_ckpt_file) as f:
+                model_checkpoint = f.read().strip()
+
+
     # # Initialize Robosuite environment
     # np.random.seed(42) # 42
     # random.seed(42)
@@ -166,6 +182,8 @@ def eval_robosuite(cfg: EvalConfig) -> float:
                             use_vllm=use_vllm)
         
         info['task_description'] = task_description
+        if model_checkpoint is not None:
+            info['model_checkpoint'] = model_checkpoint
         print("Evaluated traj #{}, task#{}, reached? {} picked? {} success? {} ".format(ctr, variation_id, info['reached'], info['picked'], info['success']))
         success_cnt += info['success']
         reached_cnt += info['reached']

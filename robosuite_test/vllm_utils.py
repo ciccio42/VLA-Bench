@@ -11,7 +11,7 @@ import subprocess
 import yaml
 import os
 
-HOST_NAME = "gnode01"  # wherever run_vllm.sh's server job lands -- update to match its assigned node
+HOST_NAME = "gnode07"  # wherever run_vllm.sh's server job lands -- update to match its assigned node
 PATH_TO_BIN = "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/Video-Captioning/Video-Captioning-Human-Demo/cosmos-reason2/.venv/bin/cosmos-reason2-inference"
     
 
