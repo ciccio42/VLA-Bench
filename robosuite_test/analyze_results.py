@@ -85,6 +85,8 @@ if __name__ == "__main__":
                 # print(json.dumps(data, indent=4))
                 if len(result[run_number]) == 0:
                     for metric in data.keys():
+                        if 'task_description' not in metric and not isinstance(data[metric], (int, float, bool)):
+                            continue  # non-numeric metadata field, see the matching skip below
                         result[run_number][metric] = []
                         if args.obj_set != "-1":
                             for color in OBJ_3_COLOR_LIST:
@@ -93,10 +95,15 @@ if __name__ == "__main__":
                                 if metric not in result[run_number][color].keys():
                                     result[run_number][color][metric] = []
                           
-                for metric in data.keys():                  
+                for metric in data.keys():
                     # print(f"{color}-{metric}")
                     if 'task_description' not in metric:
                         value = data[metric]
+                        # Skip non-numeric metadata fields (e.g. mimic-video's info.json adds
+                        # "model_checkpoint": "iter_000100000.pt" to record which checkpoint
+                        # produced the rollout) -- averaging them crashes np.mean below.
+                        if not isinstance(value, (int, float, bool)):
+                            continue
                         result[run_number][metric].append(value)
                         if args.obj_set != "-1":
                             result[run_number][color][metric].append(value)

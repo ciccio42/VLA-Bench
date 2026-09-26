@@ -368,24 +368,44 @@ class interleave_vla_remote_policy:
         }
         resp = requests.post(self.url, json=payload, timeout=30)
         resp.raise_for_status()
-        delta = np.array(resp.json()["action"], dtype=np.float64)  # dx,dy,dz,droll,dpitch,dyaw,gripper
-        delta = delta * SCALE_FACTOR  # same raw-dataset pre-scaling as lerobot_policy.py/openvla.py
+        # The server now denormalizes and returns the FULL predicted chunk: [horizon_steps, 7]
+        # (dx,dy,dz,droll,dpitch,dyaw,gripper per step), not just the first step.
+        pred = np.array(resp.json()["action"], dtype=np.float64)
+        if pred.ndim == 1:
+            pred = pred[None, :]  # defensive: tolerate a server that still returns a single flat step
+        pred = pred * SCALE_FACTOR  # same raw-dataset pre-scaling as lerobot_policy.py/openvla.py, per step
 
-        action_world = np.zeros(7)
-        action_world[0:3] = obs["eef_pos"] + delta[0:3]
         current_euler = gripper_frame_euler(obs["eef_quat"])
-        target_euler = [normalize_angle(a) for a in (current_euler + delta[3:6])]
-
         # Lock roll/pitch to the episode's initial (top-down) pose, same reasoning/heuristic as
         # lerobot_policy.py -- see that file's comment for why unlocked droll/dpitch are noise,
         # not a deliberate correction, for this dataset.
         if n_steps == 0 or self._table_perpendicular_roll_pitch is None:
             self._table_perpendicular_roll_pitch = (current_euler[0], current_euler[1])
-        target_euler[0], target_euler[1] = self._table_perpendicular_roll_pitch
+        locked_roll, locked_pitch = self._table_perpendicular_roll_pitch
 
-        action_world[3:6] = euler_to_axis_angle(target_euler)
-        action_world[6] = delta[6]
+        # Interleave controller: execute `chunk_size` predicted steps open-loop before
+        # re-querying the server, instead of just the first. Only the first row's delta is
+        # relative to the real observed `obs`; every later row in the chunk is relative to the
+        # PREVIOUS predicted step, so they must be composed sequentially (running virtual
+        # position/yaw), not each applied independently against the same real `obs` -- same
+        # "compose sequentially" requirement mimic_video_policy.py's docstring documents for its
+        # own (server-side) chunk composition.
+        n_return = min(self.chunk_size, pred.shape[0])
+        virtual_pos = np.asarray(obs["eef_pos"], dtype=np.float64).copy()
+        virtual_yaw = current_euler[2]
+
+        action_world_chunk = []
+        for i in range(n_return):
+            delta = pred[i]
+            virtual_pos = virtual_pos + delta[0:3]
+            virtual_yaw = normalize_angle(virtual_yaw + delta[5])
+            target_euler = [locked_roll, locked_pitch, virtual_yaw]
+
+            action_world = np.zeros(7)
+            action_world[0:3] = virtual_pos
+            action_world[3:6] = euler_to_axis_angle(target_euler)
+            action_world[6] = delta[6]
+            action_world_chunk.append(action_world)
 
         elapsed = time.time() - start
-        # Single-action chunk: re-query the server every env step, same choice as lerobot_policy.py.
-        return [action_world], elapsed
+        return action_world_chunk, elapsed

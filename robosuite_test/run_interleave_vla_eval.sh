@@ -41,6 +41,10 @@ OBJECT_SET=${10:--1}
 CHANGE_SPAWN_REGIONS=${CHANGE_SPAWN_REGIONS:-false}
 DEBUG_SAVE_IMAGES=${DEBUG_SAVE_IMAGES:-false}
 DEBUG_IMAGE_DIR=${DEBUG_IMAGE_DIR:-./debug_interleave_images}
+# Number of predicted steps the interleave controller executes open-loop before re-querying
+# the server (<= the model's horizon_steps=4). Defaults to the InterleaveVLAConfig default
+# (3); override to test e.g. chunk_size=1 (re-query every env step, fully closed-loop).
+CHUNK_SIZE=${CHUNK_SIZE:-3}
 # "auto" reads action_proprio_normalization_type from TRAIN_CONFIG_PATH -- safe for any
 # checkpoint trained after the interleaved_dataset.py propagation fix. Override to "bounds"
 # explicitly for the 5 pre-fix UR5e sim grounding-bin checkpoints (all actually trained with
@@ -129,6 +133,7 @@ srun python run_robosuite_eval.py \
     --model_config.otd="${OTD}" \
     --model_config.debug_save_images="${DEBUG_SAVE_IMAGES}" \
     --model_config.debug_image_dir="${DEBUG_IMAGE_DIR}" \
+    --model_config.chunk_size="${CHUNK_SIZE}" \
     "${COSMOS_ARGS[@]}"
 CLIENT_EXIT=$?
 

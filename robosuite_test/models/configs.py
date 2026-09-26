@@ -93,7 +93,7 @@ class InterleaveVLAConfig(ModelConfig):
     # VLA-Benchmark/robosuite_test/models/interleave_vla_policy.py and run_interleave_vla_eval.sh.
     model_path: str = ""          # Interleave-pi0 checkpoint (.pt) the server was started with (for logging/save_path only)
     server_port: int = 8766
-    chunk_size: int = 1
+    chunk_size: int = 3         # Number of predicted steps to execute open-loop before re-querying (<= the model's horizon_steps=4)
     sim_camera_config_path: str = (
         "/mnt/beegfs/frosa/Multi-Task-LFD-Framework/repo/Multi-Task-LFD-Training-Framework/"
         "tasks/multi_task_robosuite_env/config/PickPlaceDistractor.yaml"

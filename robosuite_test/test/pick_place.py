@@ -167,11 +167,11 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                 print(f"Gripper is open, but predicted gripper is {action_world[6]}. Opening gripper.")
                 action_world[6] = -1.0
                 gripper_closed = 0.0
-            elif gripper_closed and round(action_world[6], 5) < 0.02: #0.5
+            elif gripper_closed and round(action_world[6], 5) <= 0.02: #0.5
                 print(f"Gripper is closed, but predicted gripper is {action_world[6]}. Opening gripper.")
                 action_world[6] = -1.0
                 gripper_closed = 0.0
-            elif gripper_closed and round(action_world[6], 5) >= 0.02: #0.5
+            elif gripper_closed and round(action_world[6], 5) > 0.02: #0.5
                 print(f"Gripper is closed, but predicted gripper is {action_world[6]}. Closing gripper.")
                 action_world[6] = 1.0
                 gripper_closed = 1.0
@@ -209,25 +209,8 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
                     if action_world[6] == 1.0:
                         action_world[6] = -1.0
                         if not hasattr(policy, "observe"):
-                            # Tried a +0.02 y-offset here on 2026-09-22 based on a measured median
-                            # obj-eef y delta of +0.021m at the grasp transition (delta_all/step21000,
-                            # 16 trials). Result: made things WORSE (picked 87.5%->68.75%, success
-                            # 81.25%->50%, 5 pick failures instead of 2, new placement failures too) --
-                            # reverted. The obj_to_robot0_eef_pos delta measured at the logged "close
-                            # event" step reflects state AFTER several intermediate closing-maneuver
-                            # env.step() calls, not the raw action_world position actually commanded at
-                            # decision time, so it doesn't safely translate into a correction here.
-                            #
-                            # Re-measured properly on 2026-09-22 via the GRASP-DEBUG print above, which
-                            # captures obj_pos - action_world[:3] (the raw commanded target) at the exact
-                            # decision-time step, uncontaminated by the maneuver. Across a fresh 16-trial
-                            # run (job 567665) the dominant, consistent bias is on x (mean -0.0138m,
-                            # 14/16 trials negative -- the commanded target consistently overshoots past
-                            # the object in x), while y is small and mixed-sign (mean +0.0032m, not
-                            # systematic). Both pick failures in that run had the largest x deltas
-                            # (-0.043, -0.027) with near-zero/mixed y error, reinforcing x as the real
-                            # driver. Applying the mean x correction here.
-                            action_world[0] -= 0.014
+                            # action_world[0] += 0.015
+                            action_world[2] -= 0.03
                             obs, reward, env_done, info = env.step(action_world)
                         else:
                             pass
@@ -305,8 +288,13 @@ def pick_place_eval(cfg, policy, env, variation_id, max_T, resize_size, task_des
             tasks['success'] = int(reward or tasks['success'])
         
         
-            # check if the object has been placed in a different bin
-            if not tasks['success']:
+            # check if the object has been placed in a different bin -- check_bin only tests
+            # world-position proximity to a bin (16x16x10cm column above bin_pos, see
+            # robosuite_utils.py), with no awareness of whether the gripper actually released
+            # the object. Gated on `not gripper_closed` so simply carrying the still-grasped
+            # object near/over a wrong bin en route to the correct one doesn't get scored as a
+            # (false) wrong-bin placement and end the episode early.
+            if not tasks['success'] and not gripper_closed:
                 for i, bin_name in enumerate(ENV_OBJECTS['pick_place']['bin_names']):
                     if i != obs['target-box-id']:
                         bin_pos = obs[f"{bin_name}_pos"]

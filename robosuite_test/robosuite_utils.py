@@ -125,9 +125,15 @@ def build_env_context(env_name: str, controller_path: str, variation: int, seed:
     
 def get_eval_fn(env_name):
 
+    # Import pick_place.py directly as a top-level module (the line above already puts its
+    # own directory on sys.path) rather than as `test.pick_place` -- going through the
+    # package name `test` collides with Python's own stdlib `test` package, and fails
+    # non-deterministically with `ModuleNotFoundError: No module named 'test.pick_place'`
+    # whenever some other import in this process (torch/numba/mujoco/etc.) has already
+    # cached sys.modules['test'] as the stdlib one before this function runs.
     sys.path.append(os.path.join(os.path.dirname(__file__), "test"))
     if "pick_place" in env_name:
-        from test.pick_place import pick_place_eval
+        from pick_place import pick_place_eval
         return pick_place_eval
     elif "nut_assembly" in env_name:
         NotImplementedError
