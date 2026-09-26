@@ -118,11 +118,6 @@ VLA-Benchmark/
 ## 📜 Citation
 
 ```bibtex
-@misc{vlabench,
-  title  = {VLA-Bench: A Systematic Protocol for Evaluating Generalization of Vision-Language-Action Models},
-  note   = {Under review},
-  year   = {2026}
-}
 ```
 
 ## 🙏 Acknowledgements
