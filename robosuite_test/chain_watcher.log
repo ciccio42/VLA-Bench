@@ -30730,3 +30730,48 @@ cat: /tmp_submit_err.log: No such file or directory
 ./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
 cat: /tmp_submit_err.log: No such file or directory
 [Sat Sep 26 04:02:37 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:03:07 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:03:37 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:04:07 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:04:37 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:05:07 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:05:37 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:06:07 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:06:37 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:07:07 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:07:37 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:08:07 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:08:37 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:09:07 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:09:37 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
+./submit_remaining_chain.sh: line 25: /tmp_submit_err.log: Permission denied
+cat: /tmp_submit_err.log: No such file or directory
+[Sat Sep 26 04:10:07 PM CEST 2026] submit failed for [rm_12_13_14_15 (test, otd=true)], retrying in 30s: 
