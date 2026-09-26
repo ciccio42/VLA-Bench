@@ -33,7 +33,7 @@ For publishing and loading checkpoints on the 🤗 Hub, see [`SAVE_ON_HUGGING.md
 
 ## TinyVLA (`tinyvla`)
 
-This is Llava-Pythia with a diffusion policy head and LoRA fine-tuning. It runs in-process in the `tinyvla_robosuite_1_0_1_provola` env.
+This is Llava-Pythia with a diffusion policy head and LoRA fine-tuning. It runs in-process in the `tinyvla_robosuite_1_0_1` env.
 
 | Key | Meaning |
 |---|---|
@@ -44,6 +44,8 @@ This is Llava-Pythia with a diffusion policy head and LoRA fine-tuning. It runs 
 
 ## LeRobot policies (`lerobot`)
 
+> Requires the [LeRobot fork](https://github.com/ciccio42/lerobot.git).
+ 
 MolmoAct2 and VLA-JEPA are fine-tuned in LeRobot on `ur5e_pick_place_delta_all`. The launcher starts `lerobot_policy_server.py` in the LeRobot env (Python ≥ 3.12), and the adapter sends front and wrist images plus proprio to `/predict`. The adapter then turns the predicted **delta** actions into absolute poses.
 
 | Key | Default | Meaning |
@@ -56,6 +58,8 @@ Design notes and open issues are in [`LEROBOT_EVAL.md`](../robosuite_test/LEROBO
 
 ## mimic-video (`mimic_video`)
 
+> Requires the [MimicVideo fork](https://github.com/Clex-Auciniello/mimic-video.git).
+
 This model pairs a Cosmos video2world backbone with a world2action DiT action head. The server loads both models, so the launcher requests **2 GPUs**. The client keeps a 5-frame image history at stride 2, which reproduces the 10 Hz conditioning window the model was trained with. Frames are letterboxed to 320×240.
 
 | Key | Default |
@@ -66,6 +70,8 @@ This model pairs a Cosmos video2world backbone with a world2action DiT action he
 Each `info_<i>.json` also records the checkpoint iteration (`model_checkpoint`) that produced the rollout.
 
 ## Interleave-VLA (`interleave_vla`)
+
+> Requires the [Interleave fork](https://github.com/Clex-Auciniello/Interleave-VLA.git).
 
 This is Interleave-π0, which takes instructions that interleave images and text. The client builds the front view, a target-object crop, and a bin-grounding image, all at 224×224, from simulator bounding boxes. It uses the same crop-and-resize transform as training.
 

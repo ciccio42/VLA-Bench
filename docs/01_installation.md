@@ -29,13 +29,13 @@ Support for newer MuJoCo and robosuite versions is planned for a future release.
 
 ## 1. Patched robosuite
 
-The benchmark uses a patched robosuite 1.0.1 that adds UR5e IK support. Download it from the [anonymous repository](https://anonymous.4open.science/r/robosuite-FBC9) into `robosuite_test/robosuite/`. That folder is git-ignored. The install steps below then install it into each simulator env.
+The benchmark uses a patched robosuite 1.0.1 that adds UR5e IK support. Download it from the [repository](https://github.com/ciccio42/robosuite.git) into `robosuite_test/robosuite/`, branch *ur5e_ik*. That folder is git-ignored. The install steps below then install it into each simulator env.
 
 ---
 
 ## 2a. Simulator env for OpenVLA-OFT
 
-> Requires the [OpenVLA-OFT repository](https://anonymous.4open.science/r/openvla-oft).
+> Requires the [OpenVLA-OFT repository](https://github.com/ciccio42/openvla-oft.git).
 
 From `robosuite_test/`:
 
@@ -71,9 +71,7 @@ pip install pyquaternion
 
 ## 2b. Simulator env for TinyVLA
 
-This env is also the **client env** for the HTTP-served models (LeRobot, mimic-video, Interleave-VLA).
-
-> Requires the [TinyVLA repository](https://anonymous.4open.science/r/TinyVLA-6286/README.md).
+> Requires the [TinyVLA repository](https://github.com/ciccio42/TinyVLA.git).
 
 From `robosuite_test/`:
 
@@ -100,6 +98,8 @@ pip install -e llava-pythia
 ---
 
 ## 3. Server envs (LeRobot, mimic-video, Interleave-VLA)
+
+This env is also the **client env** for the HTTP-served models (LeRobot, mimic-video, Interleave-VLA).
 
 Install each model in its **own** environment by following its upstream instructions:
 
